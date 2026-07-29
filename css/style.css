@@ -1,0 +1,1952 @@
+/* =====================================================
+   CrediControl 2.0
+   Sprint 6 - Interfaz Profesional
+   ===================================================== */
+
+/* ===================== VARIABLES ===================== */
+
+:root{
+    --primary:#0d6efd;
+    --primary-dark:#084298;
+    --primary-soft:#e8f1ff;
+
+    --sidebar:#0b1f3a;
+    --sidebar-hover:#163a63;
+
+    --success:#198754;
+    --warning:#f59e0b;
+    --danger:#dc3545;
+
+    --background:#f5f7fb;
+    --surface:#ffffff;
+
+    --text:#1f2937;
+    --text-muted:#6b7280;
+
+    --border:#e5e7eb;
+
+    --shadow-sm:0 2px 8px rgba(15,23,42,.05);
+    --shadow-md:0 8px 24px rgba(15,23,42,.08);
+}
+
+
+/* ===================== GENERAL ===================== */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+}
+
+body{
+    background:var(--background);
+    color:var(--text);
+}
+
+.wrapper{
+    display:flex;
+    min-height:100vh;
+}
+
+
+/* ===================== SIDEBAR ===================== */
+
+.sidebar{
+    width:250px;
+
+    background:var(--sidebar);
+
+    color:#fff;
+
+    position:fixed;
+
+    top:0;
+    left:0;
+    bottom:0;
+
+    overflow-y:auto;
+
+    z-index:1000;
+
+    box-shadow:4px 0 20px rgba(15,23,42,.08);
+}
+
+
+/* ===================== LOGO ===================== */
+
+.logo{
+    min-height:105px;
+
+    padding:24px 20px;
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    justify-content:center;
+
+    text-align:center;
+
+    border-bottom:1px solid rgba(255,255,255,.08);
+}
+
+.logo h2{
+    font-size:23px;
+
+    font-weight:700;
+
+    margin-bottom:6px;
+
+    color:#fff;
+}
+
+.logo small{
+    color:#a9c7ed;
+
+    font-size:12px;
+
+    letter-spacing:.5px;
+}
+
+
+/* ===================== MENU ===================== */
+
+.menu{
+    list-style:none;
+
+    padding:20px 12px;
+
+    margin:0;
+}
+
+.menu li{
+    min-height:50px;
+
+    padding:14px 16px;
+
+    margin-bottom:6px;
+
+    cursor:pointer;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:13px;
+
+    border-radius:10px;
+
+    color:#dbeafe;
+
+    font-size:15px;
+
+    transition:
+        background .2s ease,
+        color .2s ease,
+        transform .2s ease;
+}
+
+.menu li i{
+    width:20px;
+
+    text-align:center;
+
+    font-size:17px;
+}
+
+.menu li:hover{
+    background:var(--sidebar-hover);
+
+    color:#fff;
+
+    transform:translateX(3px);
+}
+
+.menu li.active{
+    background:var(--primary);
+
+    color:#fff;
+
+    font-weight:600;
+
+    box-shadow:0 6px 16px rgba(13,110,253,.25);
+}
+
+
+/* ===================== CONTENIDO ===================== */
+
+.contenido{
+    margin-left:250px;
+
+    width:calc(100% - 250px);
+
+    min-height:100vh;
+
+    padding:30px 34px;
+}
+
+
+/* ===================== TOPBAR ===================== */
+
+.topbar{
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:32px;
+
+    padding-bottom:20px;
+
+    border-bottom:1px solid var(--border);
+}
+
+.topbar h3{
+    margin:0 0 5px 0;
+
+    font-size:28px;
+
+    font-weight:700;
+
+    color:var(--text);
+}
+
+.topbar p{
+    margin:0;
+
+    color:var(--text-muted);
+
+    font-size:14px;
+}
+
+
+/* ===================== PAGINAS ===================== */
+
+.page{
+    display:block;
+
+    animation:fadePage .2s ease;
+}
+
+.page.d-none{
+    display:none;
+}
+
+.page h2{
+    font-size:24px;
+
+    font-weight:700;
+
+    color:var(--text);
+
+    margin-bottom:20px;
+}
+
+@keyframes fadePage{
+
+    from{
+        opacity:0;
+        transform:translateY(3px);
+    }
+
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+
+}
+
+
+/* ===================== TARJETAS KPI ===================== */
+
+.indicador{
+    height:100%;
+
+    padding:22px;
+
+    border:1px solid var(--border);
+
+    border-radius:14px;
+
+    background:var(--surface);
+
+    box-shadow:var(--shadow-sm);
+
+    transition:
+        transform .2s ease,
+        box-shadow .2s ease;
+}
+
+.indicador:hover{
+    transform:translateY(-3px);
+
+    box-shadow:var(--shadow-md);
+}
+
+.indicador span{
+    display:block;
+
+    color:var(--text-muted);
+
+    font-size:13px;
+
+    font-weight:600;
+
+    text-transform:uppercase;
+
+    letter-spacing:.4px;
+}
+
+.indicador h2{
+    margin:10px 0 0 0;
+
+    font-size:27px;
+
+    font-weight:700;
+
+    color:var(--primary);
+}
+
+
+/* ===================== TABLAS ===================== */
+
+.table{
+    width:100%;
+
+    margin-bottom:0;
+
+    background:var(--surface);
+
+    color:var(--text);
+
+    vertical-align:middle;
+}
+
+.table thead{
+    background:#f8fafc;
+
+    color:#475569;
+}
+
+.table thead th{
+    padding:14px 12px;
+
+    border-bottom:1px solid var(--border);
+
+    font-size:13px;
+
+    font-weight:700;
+
+    text-transform:uppercase;
+
+    letter-spacing:.3px;
+
+    white-space:nowrap;
+}
+
+.table tbody td{
+    padding:14px 12px;
+
+    border-color:var(--border);
+
+    font-size:14px;
+
+    vertical-align:middle;
+}
+
+.table tbody tr{
+    transition:background .15s ease;
+}
+
+.table-hover tbody tr:hover{
+    background:#f8fbff;
+}
+
+
+/* ===================== CONTENEDORES DE TABLAS ===================== */
+
+.table-responsive{
+    background:var(--surface);
+
+    border:1px solid var(--border);
+
+    border-radius:14px;
+
+    overflow:hidden;
+
+    box-shadow:var(--shadow-sm);
+}
+
+
+/* ===================== BOTONES ===================== */
+
+.btn{
+    min-height:40px;
+
+    padding:8px 16px;
+
+    border-radius:9px;
+
+    font-size:14px;
+
+    font-weight:600;
+
+    transition:
+        transform .15s ease,
+        box-shadow .15s ease;
+}
+
+.btn:hover{
+    transform:translateY(-1px);
+}
+
+.btn-primary{
+    box-shadow:0 4px 10px rgba(13,110,253,.15);
+}
+
+.btn-success{
+    box-shadow:0 4px 10px rgba(25,135,84,.15);
+}
+
+.btn-sm{
+    min-height:auto;
+
+    padding:6px 10px;
+
+    font-size:12px;
+
+    border-radius:7px;
+}
+
+
+/* ===================== BADGES / ESTADOS ===================== */
+
+.badge{
+    padding:6px 10px;
+
+    border-radius:20px;
+
+    font-size:11px;
+
+    font-weight:700;
+
+    letter-spacing:.3px;
+}
+
+
+/* ===================== FORMULARIOS ===================== */
+
+.form-control,
+.form-select{
+    min-height:44px;
+
+    border:1px solid #d7dce3;
+
+    border-radius:9px;
+
+    font-size:14px;
+
+    transition:
+        border-color .2s ease,
+        box-shadow .2s ease;
+}
+
+.form-control:focus,
+.form-select:focus{
+    border-color:var(--primary);
+
+    box-shadow:0 0 0 3px rgba(13,110,253,.12);
+}
+
+label{
+    margin-bottom:6px;
+
+    color:#374151;
+
+    font-size:13px;
+
+    font-weight:600;
+}
+
+
+/* ===================== MODALES ===================== */
+
+.modal-content{
+    border:none;
+
+    border-radius:16px;
+
+    overflow:hidden;
+
+    box-shadow:0 20px 60px rgba(15,23,42,.2);
+}
+
+.modal-header{
+    padding:20px 24px;
+
+    background:#fff;
+
+    border-bottom:1px solid var(--border);
+}
+
+.modal-header h4,
+.modal-header h5{
+    margin:0;
+
+    font-weight:700;
+
+    color:var(--text);
+}
+
+.modal-body{
+    padding:24px;
+}
+
+.modal-footer{
+    padding:16px 24px;
+
+    background:#f8fafc;
+
+    border-top:1px solid var(--border);
+}
+
+
+/* ===================== SCROLLBAR ===================== */
+
+.sidebar::-webkit-scrollbar{
+    width:5px;
+}
+
+.sidebar::-webkit-scrollbar-thumb{
+    background:rgba(255,255,255,.2);
+
+    border-radius:10px;
+}
+
+
+/* ===================== RESPONSIVE ===================== */
+
+@media(max-width:900px){
+
+    .sidebar{
+        width:72px;
+    }
+
+    .logo{
+        min-height:80px;
+
+        padding:15px 5px;
+    }
+
+    .logo h2{
+        font-size:0;
+    }
+
+    .logo h2::first-letter{
+        font-size:24px;
+    }
+
+    .logo small{
+        display:none;
+    }
+
+    .menu{
+        padding:15px 8px;
+    }
+
+    .menu li{
+        justify-content:center;
+
+        padding:14px 8px;
+
+        font-size:0;
+    }
+
+    .menu li i{
+        width:auto;
+
+        font-size:20px;
+    }
+
+    .menu li:hover{
+        transform:none;
+    }
+
+    .contenido{
+        margin-left:72px;
+
+        width:calc(100% - 72px);
+
+        padding:22px 18px;
+    }
+
+    .topbar{
+        align-items:flex-start;
+    }
+
+}
+
+
+@media(max-width:576px){
+
+    .contenido{
+        padding:18px 12px;
+    }
+
+    .topbar h3{
+        font-size:23px;
+    }
+
+    .indicador{
+        padding:18px;
+    }
+
+    .indicador h2{
+        font-size:23px;
+    }
+
+    .modal-body{
+        padding:18px;
+    }
+
+}
+/* =====================================================
+   SPRINT 6 - DASHBOARD
+   ===================================================== */
+
+.kpi-icon{
+    width:46px;
+    height:46px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    flex-shrink:0;
+
+    border-radius:12px;
+
+    background:#e8f1ff;
+    color:#0d6efd;
+
+    font-size:19px;
+}
+
+.kpi-icon.kpi-success{
+    background:#e8f7ef;
+    color:#198754;
+}
+
+.kpi-icon.kpi-warning{
+    background:#fff6df;
+    color:#d97706;
+}
+
+.kpi-icon.kpi-info{
+    background:#e8f7fb;
+    color:#0891b2;
+}
+
+
+/* PANEL DASHBOARD */
+
+.dashboard-panel{
+    height:100%;
+
+    border:1px solid var(--border);
+
+    border-radius:14px;
+
+    background:#fff;
+
+    box-shadow:var(--shadow-sm);
+
+    overflow:hidden;
+}
+
+.dashboard-panel-header{
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding:20px 22px;
+
+    border-bottom:1px solid var(--border);
+}
+
+.dashboard-panel-header h5{
+    margin:0 0 4px;
+
+    font-size:17px;
+
+    font-weight:700;
+
+    color:var(--text);
+}
+
+.dashboard-panel-header small{
+    color:var(--text-muted);
+
+    font-size:12px;
+}
+
+.dashboard-chart{
+    position:relative;
+
+    padding:22px;
+
+    min-height:300px;
+}
+
+.dashboard-panel .table-responsive{
+    border:none;
+
+    border-radius:0;
+
+    box-shadow:none;
+}
+
+
+/* VALORES KPI */
+
+.indicador h2{
+    word-break:break-word;
+}
+
+@media(max-width:576px){
+
+    .kpi-icon{
+        width:40px;
+        height:40px;
+        font-size:16px;
+    }
+
+    .dashboard-chart{
+        padding:15px;
+        min-height:230px;
+    }
+
+}
+/* =====================================================
+   SPRINT 6 - MODULOS
+   ===================================================== */
+
+
+/* ENCABEZADO */
+
+.module-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    gap:20px;
+
+    margin-bottom:24px;
+
+}
+
+.module-header h3{
+
+    margin:0 0 5px;
+
+    font-size:24px;
+
+    font-weight:700;
+
+    color:var(--text);
+
+}
+
+.module-header p{
+
+    margin:0;
+
+    color:var(--text-muted);
+
+    font-size:14px;
+
+}
+
+
+/* PANEL */
+
+.module-panel{
+
+    background:#fff;
+
+    border:1px solid var(--border);
+
+    border-radius:14px;
+
+    box-shadow:var(--shadow-sm);
+
+    overflow:hidden;
+
+}
+
+
+/* BARRA DE HERRAMIENTAS */
+
+.module-toolbar{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    gap:15px;
+
+    padding:18px 20px;
+
+    border-bottom:1px solid var(--border);
+
+}
+
+
+/* BUSCADOR */
+
+.search-box{
+
+    position:relative;
+
+    width:100%;
+
+    max-width:420px;
+
+}
+
+.search-box i{
+
+    position:absolute;
+
+    left:15px;
+
+    top:50%;
+
+    transform:translateY(-50%);
+
+    color:#94a3b8;
+
+    z-index:2;
+
+}
+
+.search-box .form-control{
+
+    padding-left:42px;
+
+    background:#f8fafc;
+
+}
+
+.search-box .form-control:focus{
+
+    background:#fff;
+
+}
+
+
+/* TABLA DEL MODULO */
+
+.module-panel .table-responsive{
+
+    border:none;
+
+    border-radius:0;
+
+    box-shadow:none;
+
+}
+
+
+/* ACCIONES */
+
+.module-panel td:last-child{
+
+    white-space:nowrap;
+
+}
+
+
+/* RESPONSIVE */
+
+@media(max-width:768px){
+
+    .module-header{
+
+        align-items:flex-start;
+
+        flex-direction:column;
+
+    }
+
+    .module-header .btn{
+
+        width:100%;
+
+    }
+
+    .module-toolbar{
+
+        flex-direction:column;
+
+        align-items:stretch;
+
+    }
+
+    .search-box{
+
+        max-width:none;
+
+    }
+
+}
+
+/* =====================================================
+   SPRINT 6 - MODULO PRESTAMOS
+   ===================================================== */
+
+.module-title{
+
+    margin:0 0 3px;
+
+    font-size:16px;
+
+    font-weight:700;
+
+    color:var(--text);
+
+}
+
+.module-subtitle{
+
+    color:var(--text-muted);
+
+    font-size:12px;
+
+}
+
+
+/* MEJOR PRESENTACION DE VALORES */
+
+#tablaPrestamos td:nth-child(3),
+#tablaPrestamos td:nth-child(4){
+
+    font-weight:600;
+
+}
+
+
+/* SALDO */
+
+#tablaPrestamos td:nth-child(4){
+
+    color:#b45309;
+
+}
+
+
+/* CODIGO DEL PRESTAMO */
+
+#tablaPrestamos td:first-child{
+
+    font-weight:600;
+
+    color:var(--primary);
+
+}
+
+
+/* BOTONES DE ACCION */
+
+#tablaPrestamos td:last-child .btn{
+
+    margin:2px;
+
+}
+
+
+/* FILAS */
+
+#tablaPrestamos tr{
+
+    transition:
+        background .15s ease,
+        transform .15s ease;
+
+}
+
+#tablaPrestamos tbody tr:hover{
+
+    background:#f8fbff;
+
+}
+/* =====================================================
+   SPRINT 6 - MODULO PAGOS
+   ===================================================== */
+
+/* FECHA */
+
+#tablaPagos td:first-child{
+
+    color:var(--text-muted);
+
+    font-size:13px;
+
+}
+
+
+/* CODIGO PRESTAMO */
+
+#tablaPagos td:nth-child(3){
+
+    color:var(--primary);
+
+    font-weight:600;
+
+}
+
+
+/* NUMERO DE CUOTA */
+
+#tablaPagos td:nth-child(4){
+
+    font-weight:600;
+
+}
+
+
+/* VALOR DEL PAGO */
+
+#tablaPagos td:nth-child(5){
+
+    color:var(--success);
+
+    font-weight:700;
+
+}
+
+
+/* ACCIONES */
+
+#tablaPagos td:last-child{
+
+    white-space:nowrap;
+
+}
+
+#tablaPagos td:last-child .btn{
+
+    margin:2px;
+
+}
+
+
+/* EFECTO DE FILAS */
+
+#tablaPagos tbody tr{
+
+    transition:background .15s ease;
+
+}
+
+#tablaPagos tbody tr:hover{
+
+    background:#f8fbff;
+
+}
+
+/* =====================================================
+   SPRINT 6 - MODULO REPORTES
+   ===================================================== */
+
+.report-card{
+
+    height:100%;
+
+    padding:24px;
+
+    display:flex;
+
+    flex-direction:column;
+
+    background:#fff;
+
+    border:1px solid var(--border);
+
+    border-radius:14px;
+
+    box-shadow:var(--shadow-sm);
+
+    transition:
+        transform .2s ease,
+        box-shadow .2s ease;
+
+}
+
+.report-card:hover{
+
+    transform:translateY(-4px);
+
+    box-shadow:var(--shadow-md);
+
+}
+
+
+/* ICONOS */
+
+.report-icon{
+
+    width:52px;
+
+    height:52px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    margin-bottom:20px;
+
+    border-radius:13px;
+
+    font-size:21px;
+
+}
+
+.report-success{
+
+    background:#e8f7ef;
+
+    color:#198754;
+
+}
+
+.report-primary{
+
+    background:#e8f1ff;
+
+    color:#0d6efd;
+
+}
+
+.report-warning{
+
+    background:#fff6df;
+
+    color:#d97706;
+
+}
+
+.report-dark{
+
+    background:#eef0f3;
+
+    color:#1f2937;
+
+}
+
+
+/* CONTENIDO */
+
+.report-content{
+
+    display:flex;
+
+    flex-direction:column;
+
+    flex:1;
+
+}
+
+.report-content h5{
+
+    margin-bottom:8px;
+
+    font-size:17px;
+
+    font-weight:700;
+
+    color:var(--text);
+
+}
+
+.report-content p{
+
+    flex:1;
+
+    min-height:60px;
+
+    margin-bottom:20px;
+
+    color:var(--text-muted);
+
+    font-size:13px;
+
+    line-height:1.6;
+
+}
+
+/* =====================================================
+   SPRINT 6 - SIDEBAR FINAL
+   ===================================================== */
+
+
+/* LOGO */
+
+.logo{
+
+    min-height:100px;
+
+    padding:22px 18px;
+
+    display:flex;
+
+    flex-direction:row;
+
+    align-items:center;
+
+    justify-content:flex-start;
+
+    gap:12px;
+
+    text-align:left;
+
+}
+
+.logo-icon{
+
+    width:42px;
+
+    height:42px;
+
+    min-width:42px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    border-radius:11px;
+
+    background:var(--primary);
+
+    color:#fff;
+
+    font-size:18px;
+
+    box-shadow:0 5px 15px rgba(13,110,253,.25);
+
+}
+
+.logo-info{
+
+    overflow:hidden;
+
+}
+
+.logo-info h2{
+
+    margin:0 0 2px;
+
+    font-size:19px;
+
+    font-weight:700;
+
+    white-space:nowrap;
+
+}
+
+.logo-info small{
+
+    display:block;
+
+    color:#94a9c5;
+
+    font-size:10px;
+
+    white-space:nowrap;
+
+}
+
+
+/* TITULO MENU */
+
+.menu-label{
+
+    padding:20px 28px 5px;
+
+    color:#647b9a;
+
+    font-size:9px;
+
+    font-weight:700;
+
+    letter-spacing:1.2px;
+
+}
+
+
+/* MENU */
+
+.menu{
+
+    padding-top:10px;
+
+}
+
+.menu li span{
+
+    white-space:nowrap;
+
+}
+
+
+/* SEPARADOR */
+
+.menu li.menu-separator{
+
+    height:1px;
+
+    min-height:1px;
+
+    padding:0;
+
+    margin:15px 12px;
+
+    background:rgba(255,255,255,.08);
+
+    cursor:default;
+
+    border-radius:0;
+
+}
+
+.menu li.menu-separator:hover{
+
+    background:rgba(255,255,255,.08);
+
+    transform:none;
+
+}
+
+
+/* FOOTER SIDEBAR */
+
+.sidebar-footer{
+
+    position:absolute;
+
+    left:0;
+
+    right:0;
+
+    bottom:0;
+
+    padding:15px;
+
+    background:var(--sidebar);
+
+}
+
+.sidebar-version{
+
+    padding:12px;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    border:1px solid rgba(255,255,255,.08);
+
+    border-radius:10px;
+
+    background:rgba(255,255,255,.04);
+
+}
+
+.sidebar-version > i{
+
+    color:#60a5fa;
+
+    font-size:16px;
+
+}
+
+.sidebar-version div{
+
+    display:flex;
+
+    flex-direction:column;
+
+}
+
+.sidebar-version strong{
+
+    color:#fff;
+
+    font-size:11px;
+
+    font-weight:600;
+
+}
+
+.sidebar-version small{
+
+    color:#7890ae;
+
+    font-size:9px;
+
+}
+
+
+/* AJUSTE PARA QUE EL MENU NO QUEDE DETRAS DEL FOOTER */
+
+.menu{
+
+    padding-bottom:100px;
+
+}
+
+
+/* RESPONSIVE */
+
+@media(max-width:900px){
+
+    .logo{
+
+        justify-content:center;
+
+        padding:18px 10px;
+
+    }
+
+    .logo-info{
+
+        display:none;
+
+    }
+
+    .menu-label{
+
+        display:none;
+
+    }
+
+    .menu li span{
+
+        display:none;
+
+    }
+
+    .sidebar-footer{
+
+        display:none;
+
+    }
+
+    .menu{
+
+        padding-bottom:20px;
+
+    }
+
+}
+
+/* =====================================================
+   SPRINT 6 - MODULO COBROS
+   ===================================================== */
+
+/* TOTAL A RECAUDAR */
+
+#totalCobrosHoy{
+
+    color:#d97706;
+
+}
+
+
+/* TABLA COBROS */
+
+#tablaCobros td:nth-child(3){
+
+    color:var(--primary);
+
+    font-weight:600;
+
+}
+
+#tablaCobros td:nth-child(5){
+
+    font-weight:700;
+
+}
+
+#tablaCobros td:nth-child(7){
+
+    font-weight:600;
+
+}
+
+
+/* TABLA VENCIDOS */
+
+#tablaVencidos td:nth-child(2){
+
+    color:var(--danger);
+
+    font-weight:700;
+
+}
+
+#tablaVencidos td:nth-child(3){
+
+    font-weight:700;
+
+}
+
+
+/* ICONO CARTERA VENCIDA */
+
+.overdue-icon{
+
+    width:38px;
+
+    height:38px;
+
+    min-width:38px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    border-radius:10px;
+
+    background:#feecec;
+
+    color:var(--danger);
+
+    font-size:16px;
+
+}
+
+
+/* FILAS VENCIDAS */
+
+#tablaVencidos tr{
+
+    transition:background .15s ease;
+
+}
+
+#tablaVencidos tbody tr:hover{
+
+    background:#fff7f7;
+
+}
+
+/* =====================================================
+   SPRINT 6 - CONFIGURACION
+   ===================================================== */
+
+.settings-panel{
+
+    background:#fff;
+
+    border:1px solid var(--border);
+
+    border-radius:14px;
+
+    box-shadow:var(--shadow-sm);
+
+    overflow:hidden;
+
+}
+
+
+/* ENCABEZADO */
+
+.settings-header{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:15px;
+
+    padding:22px 24px;
+
+    border-bottom:1px solid var(--border);
+
+    background:#f8fafc;
+
+}
+
+.settings-icon{
+
+    width:46px;
+
+    height:46px;
+
+    min-width:46px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    border-radius:12px;
+
+    background:var(--primary-soft);
+
+    color:var(--primary);
+
+    font-size:18px;
+
+}
+
+.settings-header h5{
+
+    margin:0 0 4px;
+
+    font-size:17px;
+
+    font-weight:700;
+
+    color:var(--text);
+
+}
+
+.settings-header p{
+
+    margin:0;
+
+    color:var(--text-muted);
+
+    font-size:12px;
+
+}
+
+
+/* CONTENIDO */
+
+.settings-body{
+
+    padding:26px 24px;
+
+}
+
+
+/* CAMPOS */
+
+.setting-field{
+
+    height:100%;
+
+}
+
+.setting-field label{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:7px;
+
+    margin-bottom:8px;
+
+}
+
+.setting-field label i{
+
+    color:var(--primary);
+
+    font-size:12px;
+
+}
+
+.setting-field small{
+
+    display:block;
+
+    margin-top:7px;
+
+    color:var(--text-muted);
+
+    font-size:11px;
+
+    line-height:1.4;
+
+}
+/* =====================================================
+   SPRINT 7 - LOGO EMPRESARIAL
+   ===================================================== */
+
+.logo-preview-container{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:8px;
+
+}
+
+.logo-preview-container > span{
+
+    font-size:13px;
+
+    font-weight:600;
+
+}
+
+.logo-preview{
+
+    width:180px;
+
+    height:100px;
+
+    border:1px dashed var(--border);
+
+    border-radius:12px;
+
+    background:#f8fafc;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    overflow:hidden;
+
+}
+
+.logo-preview img{
+
+    max-width:100%;
+
+    max-height:100%;
+
+    object-fit:contain;
+
+    padding:8px;
+
+}
+
+#sinLogoEmpresa{
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    gap:6px;
+
+    color:var(--text-muted);
+
+}
+
+#sinLogoEmpresa i{
+
+    font-size:25px;
+
+}
+/* =====================================================
+   SPRINT 8 - LOGIN
+   ===================================================== */
+
+.login-screen{
+
+    position:fixed;
+
+    top:0;
+
+    left:0;
+
+    width:100%;
+
+    height:100vh;
+
+    background:
+        linear-gradient(
+            135deg,
+            #0d6efd,
+            #084298
+        );
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    padding:20px;
+
+    z-index:9999;
+
+}
+
+
+.login-card{
+
+    width:100%;
+
+    max-width:420px;
+
+    background:#ffffff;
+
+    padding:40px;
+
+    border-radius:20px;
+
+    box-shadow:
+        0 20px 50px
+        rgba(0,0,0,.25);
+
+}
+
+
+.login-brand{
+
+    text-align:center;
+
+    margin-bottom:30px;
+
+}
+
+
+.login-icon{
+
+    width:70px;
+
+    height:70px;
+
+    margin:0 auto 15px;
+
+    border-radius:18px;
+
+    background:#0d6efd;
+
+    color:#ffffff;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    font-size:30px;
+
+}
+
+
+.login-brand h2{
+
+    font-weight:700;
+
+    margin-bottom:5px;
+
+}
+
+
+.login-brand p{
+
+    font-size:14px;
+
+    color:#6c757d;
+
+}
+
+
+.login-footer{
+
+    text-align:center;
+
+    margin-top:25px;
+
+    color:#adb5bd;
+
+}
+
+/* =====================================================
+   SPRINT 8 - USUARIO ACTIVO
+   ===================================================== */
+
+.usuario-sesion{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+}
+
+
+.usuario-avatar{
+
+    width:42px;
+
+    height:42px;
+
+    border-radius:50%;
+
+    background:#eef5ff;
+
+    color:#0d6efd;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    font-size:18px;
+
+}
+
+
+.usuario-info{
+
+    display:flex;
+
+    flex-direction:column;
+
+    line-height:1.2;
+
+}
+
+
+.usuario-info strong{
+
+    font-size:14px;
+
+}
+
+
+.usuario-info small{
+
+    font-size:11px;
+
+    color:#6c757d;
+
+}

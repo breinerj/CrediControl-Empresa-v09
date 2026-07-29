@@ -1,0 +1,3147 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>CrediControl 1.0</title>
+
+    <!-- Bootstrap -->
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- FontAwesome -->
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+    <!-- CSS -->
+
+    <link rel="stylesheet" href="css/style.css">
+
+</head>
+
+<body>
+
+    <!-- ===========================================
+        LOGIN CREDICONTROL
+=========================================== -->
+
+<div id="pantallaLogin" class="login-screen d-none">
+
+    <div class="login-card">
+
+        <div class="login-brand">
+
+            <div class="login-icon">
+                <i class="fa fa-hand-holding-dollar"></i>
+            </div>
+
+            <h2>CrediControl</h2>
+
+            <p>
+                Sistema de Administración de Créditos
+            </p>
+
+        </div>
+
+
+        <div
+            id="mensajeLogin"
+            class="alert alert-danger d-none">
+        </div>
+
+
+        <div class="mb-3">
+
+            <label for="loginUsuario" class="form-label">
+                Usuario
+            </label>
+
+            <div class="input-group">
+
+                <span class="input-group-text">
+                    <i class="fa fa-user"></i>
+                </span>
+
+                <input
+                    id="loginUsuario"
+                    type="text"
+                    class="form-control"
+                    placeholder="Ingrese su usuario"
+                    autocomplete="username">
+
+            </div>
+
+        </div>
+
+
+        <div class="mb-4">
+
+            <label for="loginPassword" class="form-label">
+                Contraseña
+            </label>
+
+            <div class="input-group">
+
+                <span class="input-group-text">
+                    <i class="fa fa-lock"></i>
+                </span>
+
+                <input
+                    id="loginPassword"
+                    type="password"
+                    class="form-control"
+                    placeholder="Ingrese su contraseña"
+                    autocomplete="current-password">
+
+            </div>
+
+        </div>
+
+
+        <button
+            id="btnIniciarSesion"
+            class="btn btn-primary w-100">
+
+            <i class="fa fa-right-to-bracket"></i>
+
+            Iniciar Sesión
+
+        </button>
+
+
+        <div class="login-footer">
+
+            <small>
+                Acceso autorizado
+            </small>
+
+        </div>
+
+    </div>
+
+</div>
+
+    <div class="wrapper">
+
+       <!-- =============================
+        SIDEBAR
+============================== -->
+
+<aside class="sidebar">
+
+    <div class="logo">
+
+        <div class="logo-icon">
+            <i class="fa fa-wallet"></i>
+        </div>
+
+        <div class="logo-info">
+            <h2>CrediControl</h2>
+            <small>Gestión inteligente de cartera</small>
+        </div>
+
+    </div>
+
+
+    <div class="menu-label">
+        MENÚ PRINCIPAL
+    </div>
+
+
+    <ul class="menu">
+
+        <li class="active" data-page="dashboard">
+
+            <i class="fa fa-chart-line"></i>
+
+            <span>Dashboard</span>
+
+        </li>
+
+
+        <li data-page="clientes">
+
+            <i class="fa fa-users"></i>
+
+            <span>Clientes</span>
+
+        </li>
+
+
+        <li data-page="prestamos">
+
+            <i class="fa fa-hand-holding-dollar"></i>
+
+            <span>Préstamos</span>
+
+        </li>
+
+
+        <li data-page="pagos">
+
+            <i class="fa fa-money-bill-wave"></i>
+
+            <span>Pagos</span>
+
+        </li>
+
+
+        <li data-page="cobros">
+
+            <i class="fa fa-calendar-days"></i>
+
+            <span>Cobros</span>
+
+        </li>
+
+
+        <li data-page="reportes">
+
+            <i class="fa fa-file-lines"></i>
+
+            <span>Reportes</span>
+
+        </li>
+
+        <li
+            data-page="usuarios"
+            id="menuUsuarios">
+
+            <i class="fa fa-user-shield"></i>
+
+            Usuarios
+
+        </li>
+
+
+        <li class="menu-separator"></li>
+
+
+        <li data-page="configuracion">
+
+            <i class="fa fa-gears"></i>
+
+            <span>Configuración</span>
+
+        </li>
+
+    </ul>
+
+
+    <div class="sidebar-footer">
+
+        <div class="sidebar-version">
+
+            <i class="fa fa-shield-halved"></i>
+
+            <div>
+                <strong>CrediControl</strong>
+                <small>Versión 2.0</small>
+            </div>
+
+        </div>
+
+    </div>
+
+</aside>
+
+        <!-- =============================
+            CONTENIDO
+    ============================== -->
+
+        <main class="contenido">
+
+            <!-- =============================
+                TOPBAR
+        ============================== -->
+
+            <header class="topbar">
+
+                <!-- USUARIO ACTIVO -->
+
+<div class="usuario-sesion">
+
+    <div class="usuario-avatar">
+
+        <i class="fa fa-user"></i>
+
+    </div>
+
+    <div class="usuario-info">
+
+        <strong id="nombreUsuarioSesion">
+            Usuario
+        </strong>
+
+        <small id="rolUsuarioSesion">
+            Rol
+        </small>
+
+    </div>
+
+    <button
+        id="btnCerrarSesion"
+        class="btn btn-outline-danger btn-sm">
+
+        <i class="fa fa-right-from-bracket"></i>
+
+        Cerrar sesión
+
+    </button>
+
+</div>
+
+                <div>
+
+                    <h3>
+
+                        Bienvenido
+
+                    </h3>
+
+                    <p>
+
+                        Sistema Profesional de Administración de Créditos
+
+                    </p>
+
+                </div>
+
+                
+
+            </header>
+
+           <!-- =============================
+        DASHBOARD
+============================== -->
+
+<section id="dashboard" class="page">
+
+    <!-- KPIs PRINCIPALES -->
+    <div class="row g-4">
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card indicador">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <span>Capital Prestado</span>
+                        <h2 id="capitalPrestado">$0</h2>
+                    </div>
+
+                    <div class="kpi-icon">
+                        <i class="fa fa-wallet"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card indicador">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <span>Capital Recuperado</span>
+                        <h2 id="capitalRecuperado">$0</h2>
+                    </div>
+
+                    <div class="kpi-icon kpi-success">
+                        <i class="fa fa-circle-check"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card indicador">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <span>Capital Pendiente</span>
+                        <h2 id="capitalPendiente">$0</h2>
+                    </div>
+
+                    <div class="kpi-icon kpi-warning">
+                        <i class="fa fa-clock"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card indicador">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <span>Cobros Hoy</span>
+                        <h2 id="cobrosHoy">0</h2>
+                    </div>
+
+                    <div class="kpi-icon kpi-info">
+                        <i class="fa fa-calendar-day"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- KPIs SECUNDARIOS -->
+    <div class="row g-4 mt-1">
+
+        <div class="col-md-6">
+            <div class="card indicador">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <span>Intereses Recuperados</span>
+                        <h2 id="interesesRecuperados">$0</h2>
+                    </div>
+
+                    <div class="kpi-icon kpi-success">
+                        <i class="fa fa-chart-line"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-md-6">
+            <div class="card indicador">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <span>Préstamos Activos</span>
+                        <h2 id="prestamosActivos">0</h2>
+                    </div>
+
+                    <div class="kpi-icon">
+                        <i class="fa fa-hand-holding-dollar"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- INFORMACIÓN FINANCIERA -->
+    <div class="row g-4 mt-1">
+
+        <div class="col-lg-8">
+
+            <div class="card dashboard-panel">
+
+                <div class="dashboard-panel-header">
+
+                    <div>
+                        <h5>Resumen Financiero</h5>
+                        <small>
+                            Distribución general de la cartera
+                        </small>
+                    </div>
+
+                </div>
+
+                <div class="dashboard-chart">
+
+                    <canvas
+                        id="graficoCapital"
+                        height="120">
+                    </canvas>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-lg-4">
+
+            <div class="card dashboard-panel">
+
+                <div class="dashboard-panel-header">
+
+                    <div>
+                        <h5>Cobros del Día</h5>
+                        <small>
+                            Pagos programados para hoy
+                        </small>
+                    </div>
+
+                </div>
+
+                <div class="table-responsive">
+
+                    <table class="table table-hover">
+
+                        <thead>
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Valor</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="tablaCobrosHoy">
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+      <!-- =============================
+        CLIENTES
+============================== -->
+
+<section id="clientes" class="page d-none">
+
+    <!-- ENCABEZADO DEL MÓDULO -->
+
+    <div class="module-header">
+
+        <div>
+            <h3>Clientes</h3>
+
+            <p>
+                Administra la información y cartera de tus clientes
+            </p>
+        </div>
+
+        <button
+            id="btnNuevoCliente"
+            class="btn btn-primary">
+
+            <i class="fa fa-plus"></i>
+
+            Nuevo Cliente
+
+        </button>
+
+    </div>
+
+
+    <!-- PANEL PRINCIPAL -->
+
+    <div class="module-panel">
+
+        <!-- BARRA DE HERRAMIENTAS -->
+
+        <div class="module-toolbar">
+
+            <div class="search-box">
+
+                <i class="fa fa-search"></i>
+
+                <input
+                    id="buscarCliente"
+                    class="form-control"
+                    placeholder="Buscar por nombre, cédula o teléfono...">
+
+            </div>
+
+        </div>
+
+
+        <!-- TABLA -->
+
+        <div class="table-responsive">
+
+            <table class="table table-hover">
+
+                <thead>
+
+                    <tr>
+
+                        <th>Código</th>
+
+                        <th>Nombre</th>
+
+                        <th>Cédula</th>
+
+                        <th>Teléfono</th>
+
+                        <th>Capital Prestado</th>
+
+                        <th>Capital Recuperado</th>
+
+                        <th>Saldo</th>
+
+                        <th>Préstamos</th>
+
+                        <th>Estado</th>
+
+                        <th>Acciones</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="tablaClientes">
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</section>
+            <!-- =============================
+        MODAL CLIENTE
+============================== -->
+
+            <div class="modal fade" id="modalCliente" tabindex="-1">
+
+                <div class="modal-dialog modal-lg">
+
+                    <div class="modal-content">
+
+                        <div class="modal-header">
+
+                            <h4>
+
+                                Cliente
+
+                            </h4>
+
+                            <button class="btn-close" data-bs-dismiss="modal">
+
+                            </button>
+
+                        </div>
+
+                        <div class="modal-body">
+
+                            <div class="row">
+
+                                <div class="col-md-6">
+
+                                    <label>
+
+                                        Nombre
+
+                                    </label>
+
+                                    <input id="clienteNombre" class="form-control">
+
+                                </div>
+
+                                <div class="col-md-6">
+
+                                    <label>
+
+                                        Cédula
+
+                                    </label>
+
+                                    <input id="clienteCedula" class="form-control">
+
+                                </div>
+
+                                <div class="col-md-6 mt-3">
+
+                                    <label>
+
+                                        Teléfono
+
+                                    </label>
+
+                                    <input id="clienteTelefono" class="form-control">
+
+                                </div>
+
+                                <div class="col-md-6 mt-3">
+
+                                    <label>
+
+                                        Ciudad
+
+                                    </label>
+
+                                    <input id="clienteCiudad" class="form-control">
+
+                                </div>
+
+                                <div class="col-md-12 mt-3">
+
+                                    <label>
+
+                                        Dirección
+
+                                    </label>
+
+                                    <input id="clienteDireccion" class="form-control">
+
+                                </div>
+
+                                <div class="col-md-12 mt-3">
+
+                                    <label>
+
+                                        Observaciones
+
+                                    </label>
+
+                                    <textarea id="clienteObservaciones" class="form-control" rows="3">
+
+                        </textarea>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div class="modal-footer">
+
+                            <button class="btn btn-secondary" data-bs-dismiss="modal">
+
+                                Cancelar
+
+                            </button>
+
+                            <button id="guardarCliente" class="btn btn-success">
+
+                                Guardar Cliente
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+      <!-- ===========================================
+        PRESTAMOS
+=========================================== -->
+
+<section id="prestamos" class="page d-none">
+
+    <!-- ENCABEZADO DEL MÓDULO -->
+
+    <div class="module-header">
+
+        <div>
+
+            <h3>Préstamos</h3>
+
+            <p>
+                Administra los créditos, saldos y estados de la cartera
+            </p>
+
+        </div>
+
+        <button
+            id="btnNuevoPrestamo"
+            class="btn btn-success">
+
+            <i class="fa fa-plus"></i>
+
+            Nuevo Préstamo
+
+        </button>
+
+    </div>
+
+
+    <!-- PANEL PRINCIPAL -->
+
+    <div class="module-panel">
+
+        <!-- ENCABEZADO DE LA TABLA -->
+
+        <div class="module-toolbar">
+
+            <div>
+
+                <h5 class="module-title">
+                    Cartera de préstamos
+                </h5>
+
+                <span class="module-subtitle">
+                    Consulta y gestiona los préstamos registrados
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- TABLA -->
+
+        <div class="table-responsive">
+
+            <table class="table table-hover">
+
+                <thead>
+
+                    <tr>
+
+                        <th>Código</th>
+
+                        <th>Cliente</th>
+
+                        <th>Capital</th>
+
+                        <th>Saldo</th>
+
+                        <th>Periodicidad</th>
+
+                        <th>Estado</th>
+
+                        <th width="220">
+                            Acciones
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="tablaPrestamos">
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</section>
+            <!-- ===========================================
+        MODAL PRESTAMO
+=========================================== -->
+
+            <div class="modal fade" id="modalPrestamo" tabindex="-1">
+
+                <div class="modal-dialog modal-xl">
+
+                    <div class="modal-content">
+
+                        <div class="modal-header">
+
+                            <h4>
+
+                                Nuevo Préstamo
+
+                            </h4>
+
+                            <button class="btn-close" data-bs-dismiss="modal">
+
+                            </button>
+
+                        </div>
+
+                        <div class="modal-body">
+
+                            <div class="row">
+
+                                <div class="col-md-4">
+
+                                    <label>
+
+                                        Cliente
+
+                                    </label>
+
+                                    <select id="prestamoCliente" class="form-select">
+
+                                    </select>
+
+                                </div>
+
+                                <div class="col-md-2">
+
+                                    <label>
+
+                                        Capital
+
+                                    </label>
+
+                                    <input id="capital" type="number" class="form-control">
+
+                                </div>
+
+                                <div class="col-md-2">
+
+                                    <label>Interés %</label>
+
+                                    <input id="interes" type="number" value="5" class="form-control">
+
+                                </div>
+
+                                <div class="col-md-2">
+
+                                    <label>Tipo de interés</label>
+
+                                    <select id="tipoInteres" class="form-select">
+
+                                        <option value="fijo">
+                                            Interés fijo
+                                        </option>
+
+                                        <option value="saldo">
+                                            Interés sobre saldo
+                                        </option>
+
+                                    </select>
+
+                                </div>
+
+                                <div class="col-md-2">
+
+                                    <label>Meses</label>
+
+                                    <input id="meses" type="number" value="12" class="form-control">
+
+                                </div>
+
+                                <div class="col-md-2">
+
+                                    <label>Periodicidad</label>
+
+                                    <select id="periodicidad" class="form-select">
+
+                                        <option value="Mensual">
+                                            Mensual
+                                        </option>
+
+                                        <option value="Quincenal">
+                                            Quincenal
+                                        </option>
+
+                                    </select>
+
+                                </div>
+
+                            </div>
+
+                            <div class="row mt-3">
+
+                                <div class="col-md-3">
+
+                                    <label>
+
+                                        Fecha Préstamo
+
+                                    </label>
+
+                                    <input id="fechaPrestamo" type="date" class="form-control">
+
+                                </div>
+
+                                <div class="col-md-3">
+
+                                    <label>
+
+                                        Primer Pago
+
+                                    </label>
+
+                                    <input id="primerPago" type="date" class="form-control">
+
+                                </div>
+
+                                <div class="col-md-6">
+
+                                    <label>
+
+                                        Observaciones
+
+                                    </label>
+
+                                    <input id="observacionesPrestamo" class="form-control">
+
+                                </div>
+
+                            </div>
+
+                            <hr>
+
+                            <div class="row text-center">
+
+                                <div class="col">
+
+                                    <h6>Interés</h6>
+
+                                    <h4 id="lblInteres">$0</h4>
+
+                                </div>
+
+                                <div class="col">
+
+                                    <h6>Total</h6>
+
+                                    <h4 id="lblTotal">$0</h4>
+
+                                </div>
+
+                                <div class="col">
+
+                                    <h6>Cuotas</h6>
+
+                                    <h4 id="lblCuotas">0</h4>
+
+                                </div>
+
+                                <div class="col">
+
+                                    <h6>Valor Cuota</h6>
+
+                                    <h4 id="lblValorCuota">$0</h4>
+
+                                </div>
+
+                            </div>
+
+                            <hr>
+
+                            <h5>
+
+                                Vista previa del cronograma
+
+                            </h5>
+
+                            <table class="table table-bordered">
+
+                                <thead>
+
+                                    <tr>
+
+                                        <th>Cuota</th>
+
+                                        <th>Fecha</th>
+
+                                        <th>Capital</th>
+
+                                        <th>Interés</th>
+
+                                        <th>Valor</th>
+
+                                        <th>Saldo</th>
+
+                                    </tr>
+
+                                </thead>
+
+                                <tbody id="cronogramaPreview">
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                        <div class="modal-footer">
+
+                            <button class="btn btn-secondary" data-bs-dismiss="modal">
+
+                                Cancelar
+
+                            </button>
+
+                            <button id="btnGuardarPrestamo" class="btn btn-success">
+
+                                Guardar Préstamo
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+     <!-- ===========================================
+        PAGOS
+=========================================== -->
+
+<section id="pagos" class="page d-none">
+
+    <!-- ENCABEZADO DEL MÓDULO -->
+
+    <div class="module-header">
+
+        <div>
+
+            <h3>Pagos</h3>
+
+            <p>
+                Consulta y administra los pagos registrados en la cartera
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- PANEL PRINCIPAL -->
+
+    <div class="module-panel">
+
+        <!-- ENCABEZADO DE LA TABLA -->
+
+        <div class="module-toolbar">
+
+            <div>
+
+                <h5 class="module-title">
+                    Historial de pagos
+                </h5>
+
+                <span class="module-subtitle">
+                    Seguimiento de pagos y cuotas de los préstamos
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- TABLA -->
+
+        <div class="table-responsive">
+
+            <table class="table table-hover">
+
+                <thead>
+
+                    <tr>
+
+                        <th>Fecha</th>
+
+                        <th>Cliente</th>
+
+                        <th>Préstamo</th>
+
+                        <th>Cuota</th>
+
+                        <th>Valor</th>
+
+                        <th>Estado</th>
+
+                        <th>Registrado por</th>
+
+                        <th>Acción</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="tablaPagos">
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</section>
+
+       <!-- ===========================================
+        COBROS
+=========================================== -->
+
+<section id="cobros" class="page d-none">
+
+    <!-- ENCABEZADO -->
+
+    <div class="module-header">
+
+        <div>
+            <h3>Cobros</h3>
+
+            <p>
+                Gestiona los cobros programados y realiza seguimiento a la cartera vencida
+            </p>
+        </div>
+
+    </div>
+
+
+    <!-- INDICADOR TOTAL POR RECAUDAR -->
+
+    <div class="row g-4 mb-4">
+
+        <div class="col-xl-4 col-md-6">
+
+            <div class="card indicador">
+
+                <div class="d-flex justify-content-between align-items-start">
+
+                    <div>
+
+                        <span>Total por Recaudar Hoy</span>
+
+                        <h2 id="totalCobrosHoy">$0</h2>
+
+                    </div>
+
+                    <div class="kpi-icon kpi-warning">
+
+                        <i class="fa fa-money-bill-wave"></i>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- TABLAS DE COBROS -->
+
+    <div class="row g-4">
+
+        <!-- COBROS DEL DIA -->
+
+        <div class="col-12">
+
+            <div class="module-panel">
+
+                <div class="module-toolbar">
+
+                    <div>
+
+                       <h5 class="module-title">
+                            Gestión de Cobros
+                        </h5>
+
+                        <span class="module-subtitle">
+                            Cuotas pendientes de hoy y cartera vencida
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="table-responsive">
+
+                    <table class="table table-hover">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>Cliente</th>
+
+                                <th>Teléfono</th>
+
+                                <th>Préstamo</th>
+
+                                <th>Cuota</th>
+
+                                <th>Valor</th>
+
+                                <th>Estado</th>
+
+                                <th>Días Mora</th>
+
+                                <th>Acción</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="tablaCobros">
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+       
+</section>
+
+        <!-- ===========================================
+        REPORTES
+=========================================== -->
+
+<section id="reportes" class="page d-none">
+
+    <!-- ENCABEZADO -->
+
+    <div class="module-header">
+
+        <div>
+
+            <h3>Reportes</h3>
+
+            <p>
+                Exporta la información de CrediControl y administra tus copias de seguridad
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- OPCIONES DE REPORTES -->
+
+    <div class="row g-4">
+
+        <!-- CLIENTES -->
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="report-card">
+
+                <div class="report-icon report-success">
+
+                    <i class="fa fa-users"></i>
+
+                </div>
+
+                <div class="report-content">
+
+                    <h5>Clientes</h5>
+
+                    <p>
+                        Exporta la información registrada de tus clientes.
+                    </p>
+
+                    <button class="btn btn-success w-100">
+
+                        <i class="fa fa-file-export"></i>
+
+                        Exportar Clientes
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- PRESTAMOS -->
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="report-card">
+
+                <div class="report-icon report-primary">
+
+                    <i class="fa fa-hand-holding-dollar"></i>
+
+                </div>
+
+                <div class="report-content">
+
+                    <h5>Préstamos</h5>
+
+                    <p>
+                        Exporta el detalle general de la cartera de préstamos.
+                    </p>
+
+                    <button class="btn btn-primary w-100">
+
+                        <i class="fa fa-file-export"></i>
+
+                        Exportar Préstamos
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- PAGOS -->
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="report-card">
+
+                <div class="report-icon report-warning">
+
+                    <i class="fa fa-money-bill-transfer"></i>
+
+                </div>
+
+                <div class="report-content">
+
+                    <h5>Pagos</h5>
+
+                    <p>
+                        Exporta el historial de pagos y movimientos registrados.
+                    </p>
+
+                    <button class="btn btn-warning w-100">
+
+                        <i class="fa fa-file-export"></i>
+
+                        Exportar Pagos
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- COPIA DE SEGURIDAD -->
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="report-card">
+
+                <div class="report-icon report-dark">
+
+                    <i class="fa fa-database"></i>
+
+                </div>
+
+                <div class="report-content">
+
+                    <h5>Seguridad</h5>
+
+                    <p>
+                        Genera una copia de seguridad de los datos de CrediControl.
+                    </p>
+
+                    <button class="btn btn-dark w-100">
+
+                        <i class="fa fa-download"></i>
+
+                        Copia de Seguridad
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ===========================================
+     REPORTE DE RECAUDO POR COBRADOR
+=========================================== -->
+
+<div class="card p-4 mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+
+            <h4>Recaudo por Cobrador</h4>
+
+            <p class="text-muted mb-0">
+                Consulta los pagos registrados por cada usuario
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- FILTROS -->
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-4">
+
+            <label for="filtroCobrador" class="form-label">
+                Cobrador
+            </label>
+
+            <select
+                id="filtroCobrador"
+                class="form-select">
+
+                <option value="">
+                    Todos los usuarios
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <div class="col-md-3">
+
+            <label for="filtroFechaDesde" class="form-label">
+                Desde
+            </label>
+
+            <input
+                id="filtroFechaDesde"
+                type="date"
+                class="form-control">
+
+        </div>
+
+
+        <div class="col-md-3">
+
+            <label for="filtroFechaHasta" class="form-label">
+                Hasta
+            </label>
+
+            <input
+                id="filtroFechaHasta"
+                type="date"
+                class="form-control">
+
+        </div>
+
+
+      <div class="col-md-2 d-flex align-items-end gap-2">
+
+    <button
+        id="btnConsultarRecaudo"
+        class="btn btn-primary">
+
+        <i class="fa fa-search"></i>
+
+        Consultar
+
+    </button>
+
+    <button
+        id="btnExportarRecaudo"
+        class="btn btn-success"
+        title="Exportar reporte a Excel">
+
+        <i class="fa fa-file-excel"></i>
+
+        Excel
+
+    </button>
+
+</div>
+
+
+    <!-- INDICADORES -->
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-3">
+
+            <div class="card p-3 text-center">
+
+                <small>Total Recaudado</small>
+
+                <h4 id="reporteTotalRecaudado">
+                    $0
+                </h4>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-3">
+
+            <div class="card p-3 text-center">
+
+                <small>Capital Recuperado</small>
+
+                <h4 id="reporteCapitalRecuperado">
+                    $0
+                </h4>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-3">
+
+            <div class="card p-3 text-center">
+
+                <small>Intereses Recuperados</small>
+
+                <h4 id="reporteInteresesRecuperados">
+                    $0
+                </h4>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-3">
+
+            <div class="card p-3 text-center">
+
+                <small>Cantidad de Pagos</small>
+
+                <h4 id="reporteCantidadPagos">
+                    0
+                </h4>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- DETALLE -->
+
+    <div class="table-responsive">
+
+        <table class="table table-hover">
+
+            <thead>
+
+                <tr>
+
+                    <th>Fecha</th>
+
+                    <th>Recibo</th>
+
+                    <th>Cobrador</th>
+
+                    <th>Cliente</th>
+
+                    <th>Préstamo</th>
+
+                    <th>Capital</th>
+
+                    <th>Interés</th>
+
+                    <th>Total</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody id="tablaReporteCobradores">
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<!-- ===========================================
+        USUARIOS
+=========================================== -->
+
+<section id="usuarios" class="page d-none">
+
+    <!-- ENCABEZADO -->
+
+    <div class="module-header">
+
+        <div>
+
+            <h3>
+                Administración de Usuarios
+            </h3>
+
+            <p>
+                Gestiona las cuentas y permisos de acceso a CrediControl
+            </p>
+
+        </div>
+
+        <!-- ===========================================
+     CONTROL DE CUPOS DE COBRADORES
+=========================================== -->
+
+<div class="card p-4 mb-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+
+        <div>
+
+            <h5 class="mb-1">
+                <i class="fa fa-id-badge"></i>
+                Licencias de Cobradores
+            </h5>
+
+            <small class="text-muted">
+                Control de usuarios cobradores autorizados
+            </small>
+
+        </div>
+
+        <button
+            id="btnSolicitarCupo"
+            class="btn btn-outline-primary">
+
+            <i class="fa fa-plus-circle"></i>
+
+            Solicitar nuevo cupo
+
+        </button>
+
+    </div>
+
+
+    <div class="row g-3">
+
+        <div class="col-md-4">
+
+            <div class="card p-3 text-center">
+
+                <small>
+                    Cupos autorizados
+                </small>
+
+                <h3 id="cuposAutorizados">
+                    0
+                </h3>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-4">
+
+            <div class="card p-3 text-center">
+
+                <small>
+                    Cobradores activos
+                </small>
+
+                <h3 id="cobradoresActivos">
+                    0
+                </h3>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-4">
+
+            <div class="card p-3 text-center">
+
+                <small>
+                    Cupos disponibles
+                </small>
+
+                <h3 id="cuposDisponibles">
+                    0
+                </h3>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+        <button
+            id="btnNuevoUsuario"
+            class="btn btn-primary">
+
+            <i class="fa fa-user-plus"></i>
+
+            Nuevo Usuario
+
+        </button>
+
+    </div>
+
+
+    <!-- LISTADO -->
+
+    <div class="card p-4">
+
+        <div class="table-responsive">
+
+            <table class="table table-hover">
+
+                <thead>
+
+                    <tr>
+
+                        <th>Nombre</th>
+
+                        <th>Usuario</th>
+
+                        <th>Rol</th>
+
+                        <th>Estado</th>
+
+                        <th>Último acceso</th>
+
+                        <th>Acciones</th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody id="tablaUsuarios">
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ===========================================
+        MODAL NUEVO USUARIO
+=========================================== -->
+
+<div
+    class="modal fade"
+    id="modalUsuario"
+    tabindex="-1">
+
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h4 class="modal-title">
+
+                    <i class="fa fa-user-plus"></i>
+
+                    Nuevo Usuario
+
+                </h4>
+
+
+                <button
+                    class="btn-close"
+                    data-bs-dismiss="modal">
+
+                </button>
+
+            </div>
+
+
+            <div class="modal-body">
+
+                <!-- NOMBRE -->
+
+                <div class="mb-3">
+
+                    <label for="usuarioNombre">
+
+                        Nombre completo
+
+                    </label>
+
+                    <input
+                        id="usuarioNombre"
+                        class="form-control"
+                        placeholder="Nombre del usuario">
+
+                </div>
+
+
+                <!-- USUARIO -->
+
+                <div class="mb-3">
+
+                    <label for="usuarioLogin">
+
+                        Usuario de acceso
+
+                    </label>
+
+                    <input
+                        id="usuarioLogin"
+                        class="form-control"
+                        placeholder="Ej: cobrador1"
+                        autocomplete="off">
+
+                </div>
+
+
+                <!-- CONTRASEÑA -->
+
+                <div class="mb-3">
+
+                    <label for="usuarioPassword">
+
+                        Contraseña
+
+                    </label>
+
+                    <input
+                        id="usuarioPassword"
+                        type="password"
+                        class="form-control"
+                        placeholder="Contraseña"
+                        autocomplete="new-password">
+
+                </div>
+
+
+                <!-- ROL -->
+
+                <div class="mb-3">
+
+                    <label for="usuarioRol">
+
+                        Rol
+
+                    </label>
+
+                    <select
+                        id="usuarioRol"
+                        class="form-select">
+
+                        <option value="COBRADOR">
+
+                            Cobrador
+
+                        </option>
+
+                        <option value="ADMINISTRADOR">
+
+                            Administrador
+
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+
+            <div class="modal-footer">
+
+                <button
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal">
+
+                    Cancelar
+
+                </button>
+
+
+                <button
+                    id="btnGuardarUsuario"
+                    class="btn btn-primary">
+
+                    <i class="fa fa-floppy-disk"></i>
+
+                    Guardar Usuario
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+        <!-- ===========================================
+        CONFIGURACIÓN
+=========================================== -->
+
+<section id="configuracion" class="page d-none">
+
+    <div class="module-header">
+        <div>
+            <h3>Configuración</h3>
+            <p>
+                Administra la información empresarial y los parámetros generales de CrediControl
+            </p>
+        </div>
+    </div>
+
+    <!-- =====================================================
+     SEGURIDAD DEL ADMINISTRADOR
+====================================================== -->
+
+    <div class="card mt-4">
+
+        <div class="card-header">
+            <h5 class="mb-0">
+            Seguridad de acceso
+            </h5>
+    </div>
+
+    <div class="card-body">
+
+        <p>
+            Desde aquí puede cambiar el nombre de usuario
+            y la contraseña del administrador principal
+            de CrediControl.
+        </p>
+
+        <button
+            type="button"
+            id="btnCambiarCredencialesAdmin"
+            class="btn btn-primary"
+        >
+            Cambiar credenciales de administrador
+        </button>
+
+    </div>
+
+</div>
+
+
+    <!-- ===========================================
+         INFORMACIÓN DE LA EMPRESA
+    ============================================ -->
+
+    <div class="settings-panel mb-4">
+
+        <div class="settings-header">
+
+            <div class="settings-icon">
+                <i class="fa fa-building"></i>
+            </div>
+
+            <div>
+                <h5>Información de la Empresa</h5>
+                <p>
+                    Esta información aparecerá en recibos y documentos generados por el sistema
+                </p>
+            </div>
+
+        </div>
+
+
+        <div class="settings-body">
+        <!-- LOGO EMPRESARIAL -->
+
+<div class="row g-4 mb-4">
+
+    <div class="col-md-4">
+
+        <div class="setting-field">
+
+            <label for="logoEmpresa">
+
+                <i class="fa fa-image"></i>
+
+                Logo de la empresa
+
+            </label>
+
+            <input
+                id="logoEmpresa"
+                type="file"
+                class="form-control"
+                accept="image/png,image/jpeg">
+
+            <small>
+                Selecciona una imagen PNG o JPG
+            </small>
+
+        </div>
+
+    </div>
+
+
+    <div class="col-md-4">
+
+        <div class="logo-preview-container">
+
+            <span>Vista previa</span>
+
+            <div class="logo-preview">
+
+                <img
+                    id="previewLogoEmpresa"
+                    alt="Logo de la empresa"
+                    style="display:none;">
+
+                <div id="sinLogoEmpresa">
+
+                    <i class="fa fa-building"></i>
+
+                    <small>
+                        Sin logo
+                    </small>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+            <div class="row g-4">
+
+                <div class="col-lg-4 col-md-6">
+
+                    <div class="setting-field">
+
+                        <label for="empresa">
+                            <i class="fa fa-building"></i>
+                            Nombre comercial
+                        </label>
+
+                        <input
+                            id="empresa"
+                            class="form-control"
+                            placeholder="Ej: CrediControl">
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-lg-4 col-md-6">
+
+                    <div class="setting-field">
+
+                        <label for="razonSocial">
+                            <i class="fa fa-briefcase"></i>
+                            Razón social
+                        </label>
+
+                        <input
+                            id="razonSocial"
+                            class="form-control"
+                            placeholder="Razón social de la empresa">
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-lg-4 col-md-6">
+
+                    <div class="setting-field">
+
+                        <label for="nitEmpresa">
+                            <i class="fa fa-id-card"></i>
+                            NIT
+                        </label>
+
+                        <input
+                            id="nitEmpresa"
+                            class="form-control"
+                            placeholder="NIT de la empresa">
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-lg-6 col-md-6">
+
+                    <div class="setting-field">
+
+                        <label for="direccionEmpresa">
+                            <i class="fa fa-location-dot"></i>
+                            Dirección
+                        </label>
+
+                        <input
+                            id="direccionEmpresa"
+                            class="form-control"
+                            placeholder="Dirección">
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-lg-3 col-md-6">
+
+                    <div class="setting-field">
+
+                        <label for="ciudadEmpresa">
+                            <i class="fa fa-city"></i>
+                            Ciudad
+                        </label>
+
+                        <input
+                            id="ciudadEmpresa"
+                            class="form-control"
+                            placeholder="Ciudad">
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-lg-3 col-md-6">
+
+                    <div class="setting-field">
+
+                        <label for="departamentoEmpresa">
+                            <i class="fa fa-map"></i>
+                            Departamento
+                        </label>
+
+                        <input
+                            id="departamentoEmpresa"
+                            class="form-control"
+                            placeholder="Departamento">
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-lg-3 col-md-6">
+
+                    <div class="setting-field">
+
+                        <label for="telefonoEmpresa">
+                            <i class="fa fa-phone"></i>
+                            Teléfono
+                        </label>
+
+                        <input
+                            id="telefonoEmpresa"
+                            class="form-control"
+                            placeholder="Teléfono">
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-lg-3 col-md-6">
+
+                    <div class="setting-field">
+
+                        <label for="whatsappEmpresa">
+                            <i class="fa-brands fa-whatsapp"></i>
+                            WhatsApp
+                        </label>
+
+                        <input
+                            id="whatsappEmpresa"
+                            class="form-control"
+                            placeholder="WhatsApp">
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-lg-3 col-md-6">
+
+                    <div class="setting-field">
+
+                        <label for="correoEmpresa">
+                            <i class="fa fa-envelope"></i>
+                            Correo
+                        </label>
+
+                        <input
+                            id="correoEmpresa"
+                            type="email"
+                            class="form-control"
+                            placeholder="correo@empresa.com">
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-lg-3 col-md-6">
+
+                    <div class="setting-field">
+
+                        <label for="webEmpresa">
+                            <i class="fa fa-globe"></i>
+                            Página web
+                        </label>
+
+                        <input
+                            id="webEmpresa"
+                            class="form-control"
+                            placeholder="www.empresa.com">
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ===========================================
+         RESPONSABLE
+    ============================================ -->
+
+    <div class="settings-panel mb-4">
+
+        <div class="settings-header">
+
+            <div class="settings-icon">
+                <i class="fa fa-user-tie"></i>
+            </div>
+
+            <div>
+                <h5>Responsable</h5>
+                <p>
+                    Información de la persona responsable de la operación
+                </p>
+            </div>
+
+        </div>
+
+
+        <div class="settings-body">
+
+            <div class="row g-4">
+
+                <div class="col-md-4">
+
+                    <div class="setting-field">
+
+                        <label for="responsableNombre">
+                            Nombre
+                        </label>
+
+                        <input
+                            id="responsableNombre"
+                            class="form-control"
+                            placeholder="Nombre completo">
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-4">
+
+                    <div class="setting-field">
+
+                        <label for="responsableCargo">
+                            Cargo
+                        </label>
+
+                        <input
+                            id="responsableCargo"
+                            class="form-control"
+                            placeholder="Cargo">
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-4">
+
+                    <div class="setting-field">
+
+                        <label for="responsableDocumento">
+                            Documento
+                        </label>
+
+                        <input
+                            id="responsableDocumento"
+                            class="form-control"
+                            placeholder="Número de documento">
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ===========================================
+         CONFIGURACIÓN FINANCIERA
+    ============================================ -->
+
+    <div class="settings-panel mb-4">
+
+        <div class="settings-header">
+
+            <div class="settings-icon">
+                <i class="fa fa-coins"></i>
+            </div>
+
+            <div>
+                <h5>Configuración Financiera</h5>
+                <p>
+                    Parámetros predeterminados utilizados en las operaciones
+                </p>
+            </div>
+
+        </div>
+
+
+        <div class="settings-body">
+
+            <div class="row g-4">
+
+                <div class="col-md-4">
+
+                    <div class="setting-field">
+
+                        <label for="interesDefault">
+                            <i class="fa fa-percent"></i>
+                            Interés por defecto
+                        </label>
+
+                        <input
+                            id="interesDefault"
+                            type="number"
+                            class="form-control"
+                            value="5"
+                            step="0.1">
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-4">
+
+                    <div class="setting-field">
+
+                        <label for="monedaDefault">
+                            Moneda
+                        </label>
+
+                        <select
+                            id="monedaDefault"
+                            class="form-select">
+
+                            <option value="COP">
+                                Pesos Colombianos (COP)
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-4">
+
+                    <div class="setting-field">
+
+                        <label for="diasMesFinanciero">
+                            Días del mes financiero
+                        </label>
+
+                        <input
+                            id="diasMesFinanciero"
+                            type="number"
+                            class="form-control"
+                            value="30"
+                            readonly>
+
+                        <small>
+                            Utilizado para calcular intereses proporcionales
+                        </small>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ===========================================
+         GUARDAR
+    ============================================ -->
+
+    <div class="d-flex justify-content-end mb-4">
+
+        <button
+            id="btnGuardarConfiguracion"
+            class="btn btn-primary px-4">
+
+            <i class="fa fa-floppy-disk"></i>
+
+            Guardar Configuración
+
+        </button>
+
+    </div>
+
+</section>
+            <!-- ===========================================
+     MODAL CRONOGRAMA
+=========================================== -->
+
+            <div class="modal fade" id="modalCronograma" tabindex="-1">
+
+                <div class="modal-dialog modal-xl">
+
+                    <div class="modal-content">
+
+                        <div class="modal-header">
+
+                            <h4>Cronograma del Préstamo</h4>
+
+                            <button class="btn-close" data-bs-dismiss="modal"></button>
+
+                        </div>
+
+                        <div class="modal-body">
+                            <div class="card mb-3">
+
+                                <div class="card-body" id="resumenPrestamo">
+
+                                </div>
+
+                            </div>
+
+
+                            <table class="table table-striped table-bordered">
+
+                                <thead>
+
+                                    <tr>
+
+                                        <th>Cuota</th>
+                                        <th>Fecha</th>
+                                        <th>Capital</th>
+                                        <th>Interés</th>
+                                        <th>Valor</th>
+                                        <th>Pagado</th>
+                                        <th>Estado</th>
+                                        <th>Acción</th>
+
+                                    </tr>
+
+                                </thead>
+
+                                <tbody id="tablaCronograma">
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ===========================================
+     MODAL PAGO
+=========================================== -->
+
+            <div class="modal fade" id="modalPago" tabindex="-1">
+
+                <div class="modal-dialog">
+
+                    <div class="modal-content">
+
+                        <div class="modal-header">
+
+                            <h4>
+
+                                Registrar Pago
+
+                            </h4>
+
+                            <button class="btn-close" data-bs-dismiss="modal">
+
+                            </button>
+
+                        </div>
+
+                        <div class="modal-body">
+
+                            <input type="hidden" id="pagoPrestamo">
+
+                            <input type="hidden" id="pagoCuota">
+
+                            <div class="mb-3">
+
+                                <label>Cliente</label>
+
+                                <input id="lblClientePago" class="form-control" readonly>
+
+                            </div>
+
+                            <div class="mb-3">
+
+                                <label>Valor pendiente</label>
+
+                                <input id="lblValorCuotaPago" class="form-control" readonly>
+
+                            </div>
+
+                            <div class="mb-3">
+
+                                <label>Valor recibido</label>
+
+                                <input id="valorPago" type="number" class="form-control">
+
+                            </div>
+
+                            <div class="mb-3">
+
+                                <label>Observación</label>
+
+                                <textarea id="observacionPago" class="form-control" rows="3"></textarea>
+
+                            </div>
+
+                        </div>
+
+                        <div class="modal-footer">
+
+                            <button id="btnGuardarPago" class="btn btn-success">
+
+                                Guardar Pago
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- ===========================================
+     MODAL REESTRUCTURACIÓN
+=========================================== -->
+
+            <div class="modal fade" id="modalReestructuracion" tabindex="-1">
+
+                <div class="modal-dialog modal-xl">
+
+                    <div class="modal-content">
+
+                        <div class="modal-header bg-warning">
+
+                            <h4 class="mb-0">
+
+                                🔄 Reestructuración del Préstamo
+
+                            </h4>
+
+                            <button class="btn-close" data-bs-dismiss="modal">
+
+                            </button>
+
+                        </div>
+
+                        <div class="modal-body">
+
+                            <!-- ==============================
+                     INFORMACIÓN ACTUAL
+                =============================== -->
+
+                            <div class="card mb-3">
+
+                                <div class="card-header bg-primary text-white">
+
+                                    Información del préstamo
+
+                                </div>
+
+                                <div class="card-body">
+
+                                    <div class="row">
+
+                                        <div class="col-md-4">
+
+                                            <label><strong>Cliente</strong></label>
+
+                                            <input id="resCliente" class="form-control" readonly>
+
+                                        </div>
+
+                                        <div class="col-md-4">
+
+                                            <label><strong>Préstamo</strong></label>
+
+                                            <input id="resCodigo" class="form-control" readonly>
+
+                                        </div>
+
+                                        <div class="col-md-4">
+
+                                            <label><strong>Estado</strong></label>
+
+                                            <input id="resEstado" class="form-control" readonly>
+
+                                        </div>
+
+                                    </div>
+
+                                    <br>
+
+                                    <div class="row">
+
+                                        <div class="col-md-3">
+
+                                            <label>Capital Inicial</label>
+
+                                            <input id="resCapital" class="form-control" readonly>
+
+                                        </div>
+
+                                        <div class="col-md-3">
+
+                                            <label>Saldo Pendiente</label>
+
+                                            <input id="resSaldo" class="form-control" readonly>
+
+                                        </div>
+
+                                        <div class="col-md-3">
+
+                                            <label>Capital Recuperado</label>
+
+                                            <input id="resCapitalRec" class="form-control" readonly>
+
+                                        </div>
+
+                                        <div class="col-md-3">
+
+                                            <label>Interés Recuperado</label>
+
+                                            <input id="resInteresRec" class="form-control" readonly>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <!-- ==============================
+                     NUEVAS CONDICIONES
+                =============================== -->
+
+                            <div class="card mb-3">
+
+                                <div class="card-header bg-success text-white">
+
+                                    Nuevas condiciones
+
+                                </div>
+
+                                <div class="card-body">
+
+                                    <div class="row">
+
+                                        <div class="col-md-3">
+
+                                            <label>Nuevo plazo</label>
+
+                                            <input id="nuevoPlazo" type="number" class="form-control">
+
+                                        </div>
+
+                                        <div class="col-md-3">
+
+                                            <label>Nueva tasa (%)</label>
+
+                                            <input id="nuevaTasa" type="number" class="form-control">
+
+                                        </div>
+
+                                        <div class="col-md-3">
+
+                                            <label>Periodicidad</label>
+
+                                            <select id="nuevaPeriodicidad" class="form-select">
+
+                                                <option>
+
+                                                    Mensual
+
+                                                </option>
+
+                                                <option>
+
+                                                    Quincenal
+
+                                                </option>
+
+                                            </select>
+
+                                        </div>
+
+                                        <div class="col-md-3">
+
+                                            <label>Primer pago</label>
+
+                                            <input id="nuevoPrimerPago" type="date" class="form-control">
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <!-- ==============================
+                     SIMULACIÓN
+                =============================== -->
+
+                            <div class="card">
+
+                                <div class="card-header bg-info text-white">
+
+                                    Simulación del nuevo cronograma
+
+                                </div>
+
+                                <div class="card-body">
+
+                                    <table class="table table-bordered table-striped">
+
+                                        <thead>
+
+                                            <tr>
+
+                                                <th>Cuota</th>
+
+                                                <th>Fecha</th>
+
+                                                <th>Capital</th>
+
+                                                <th>Interés</th>
+
+                                                <th>Total</th>
+
+                                                <th>Saldo</th>
+
+                                            </tr>
+
+                                        </thead>
+
+                                        <tbody id="tablaReestructuracion">
+
+                                        </tbody>
+
+                                    </table>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div class="modal-footer">
+
+                            <button class="btn btn-secondary" data-bs-dismiss="modal">
+
+                                Cancelar
+
+                            </button>
+
+                            <button id="btnGuardarReestructuracion" class="btn btn-success">
+
+                                💾 Guardar Reestructuración
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </main>
+
+    </div>
+
+    <!-- Bootstrap -->
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Chart.js -->
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <!-- QR Code -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <!-- SheetJS - Exportar Excel -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+    <!-- JavaScript -->
+    <script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script src="js/supabase.js"></script>
+    <script src="js/database.js"></script>
+    <script src="js/usuarios.js"></script>
+    <script src="js/configuracion.js"></script>
+    <script src="js/clientes.js"></script>
+    <script src="js/estadisticas.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/utilidades.js"></script>
+    <script src="js/calculos.js"></script>
+    <script src="js/prestamos.js"></script>
+    <script src="js/pagos.js"></script>
+    <!-- Recibos PDF -->
+    <script src="js/recibos.js"></script>
+    <script src="js/reportes.js"></script>
+    <script src="js/app.js"></script>
+<!-- =====================================================
+     ACTIVACION CREDICONTROL EMPRESA
+====================================================== -->
+
+<div id="pantallaActivacionEmpresa"
+     style="
+        display:none;
+        position:fixed;
+        top:0;
+        left:0;
+        width:100%;
+        height:100%;
+        background:rgba(0,0,0,0.75);
+        z-index:99999;
+        align-items:center;
+        justify-content:center;
+     ">
+
+    <div style="
+        background:white;
+        padding:30px;
+        border-radius:12px;
+        width:90%;
+        max-width:400px;
+     ">
+
+        <h2>Activar CrediControl</h2>
+
+        <p>
+            Ingrese las credenciales asignadas a su empresa
+            para vincular esta instalación.
+        </p>
+
+        <label>Correo</label>
+
+        <input
+            type="email"
+            id="activacionCorreo"
+            placeholder="correo@empresa.com"
+            style="
+                width:100%;
+                padding:10px;
+                margin-bottom:15px;
+            "
+        >
+
+
+        <label>Contraseña</label>
+
+        <input
+            type="password"
+            id="activacionPassword"
+            placeholder="Contraseña"
+            style="
+                width:100%;
+                padding:10px;
+                margin-bottom:20px;
+            "
+        >
+
+
+        <button
+            id="btnActivarEmpresa"
+            type="button"
+            style="
+                width:100%;
+                padding:12px;
+                cursor:pointer;
+            "
+        >
+            Activar empresa
+        </button>
+
+
+        <p
+            id="mensajeActivacion"
+            style="
+                margin-top:15px;
+                text-align:center;
+            "
+        ></p>
+
+    </div>
+
+</div>
+
+<!-- =====================================================
+     CREAR ADMINISTRADOR PRINCIPAL
+====================================================== -->
+
+<div id="pantallaCrearAdministrador"
+     style="
+        display:none;
+        position:fixed;
+        top:0;
+        left:0;
+        width:100%;
+        height:100%;
+        background:rgba(0,0,0,0.75);
+        z-index:100000;
+        align-items:center;
+        justify-content:center;
+     ">
+
+    <div style="
+        background:white;
+        padding:30px;
+        border-radius:12px;
+        width:90%;
+        max-width:400px;
+     ">
+
+        <h2>Crear administrador</h2>
+
+        <p>
+            Configure el administrador principal
+            de esta instalación de CrediControl.
+        </p>
+
+
+        <label>Nombre</label>
+
+        <input
+            type="text"
+            id="nuevoAdminNombre"
+            placeholder="Nombre del administrador"
+            style="
+                width:100%;
+                padding:10px;
+                margin-bottom:15px;
+            "
+        >
+
+
+        <label>Usuario</label>
+
+        <input
+            type="text"
+            id="nuevoAdminUsuario"
+            placeholder="Usuario de acceso"
+            style="
+                width:100%;
+                padding:10px;
+                margin-bottom:15px;
+            "
+        >
+
+
+        <label>Contraseña</label>
+
+        <input
+            type="password"
+            id="nuevoAdminPassword"
+            placeholder="Mínimo 6 caracteres"
+            style="
+                width:100%;
+                padding:10px;
+                margin-bottom:15px;
+            "
+        >
+
+
+        <label>Confirmar contraseña</label>
+
+        <input
+            type="password"
+            id="nuevoAdminPasswordConfirmar"
+            placeholder="Repita la contraseña"
+            style="
+                width:100%;
+                padding:10px;
+                margin-bottom:20px;
+            "
+        >
+
+
+        <button
+            type="button"
+            id="btnCrearAdministradorPrincipal"
+            style="
+                width:100%;
+                padding:12px;
+                cursor:pointer;
+            "
+        >
+            Crear administrador
+        </button>
+
+
+        <p
+            id="mensajeCrearAdministrador"
+            style="
+                margin-top:15px;
+                text-align:center;
+            "
+        ></p>
+
+    </div>
+
+</div>
+
+</body>
+
+</html>
