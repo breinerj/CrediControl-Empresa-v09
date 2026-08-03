@@ -311,6 +311,9 @@ async function migrarClientesLocalesASupabase(){
                 empresa_id:
                     empresaId,
 
+                cobrador_id:
+                    authUsuario.id,    
+
                 local_id:
                     Number(cliente.id),
 

@@ -36,9 +36,28 @@ async function iniciarAplicacion(){
         
             if(!resultado){
 
-                mostrarPantallaActivacion();
+    mostrarPantallaActivacion();
 
-            }
+    return;
+
+}
+
+/*
+    La empresa ya está activada.
+
+    Ahora verificamos si existe un
+    administrador local.
+*/
+
+if(!inicializarUsuarios()){
+
+    mostrarCrearAdministrador();
+
+    return;
+
+}
+
+mostrarLogin();
         }catch(error){
 
             console.error(

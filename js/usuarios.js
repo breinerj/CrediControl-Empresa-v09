@@ -40,11 +40,9 @@ function inicializarUsuarios(){
 
     }
 
-
     return true;
 
 }
-
 
 /*=========================================================
     OBTENER USUARIO
@@ -440,6 +438,8 @@ async function iniciarSesion(){
     }
 
 
+
+
     /*=====================================================
         VERIFICAR CONTRASEÑA
     =====================================================*/
@@ -600,6 +600,8 @@ async function iniciarSesion(){
 
 }
 
+
+
 /*=========================================================
     CAMBIAR CREDENCIALES DEL ADMINISTRADOR PRINCIPAL
 =========================================================*/
@@ -750,6 +752,8 @@ async function cambiarCredencialesAdministrador(){
         return false;
 
     }
+
+  
 
 
 /*=========================================================
@@ -1155,6 +1159,8 @@ if(
 
     }
 
+   
+
 
    /*=========================================================
     GENERAR CONTRASEÑA SEGURA
@@ -1252,8 +1258,8 @@ const nuevoUsuario = {
         "Usuario creado correctamente."
     );
 
-}
 
+}
 
 /*=========================================================
     LISTAR USUARIOS
@@ -1593,51 +1599,37 @@ function aplicarPermisosUsuario(){
         COBRADOR
     =============================================*/
 
-    if(usuario.rol === "COBRADOR"){
 
-        /* OCULTAR MODULOS ADMINISTRATIVOS */
+/*=============================================
+    COBRADOR
+=============================================*/
 
-        if(menuReportes){
+if(usuario.rol === "COBRADOR"){
 
-            menuReportes.style.display =
-                "none";
-
-        }
-
-        if(menuUsuarios){
-
-            menuUsuarios.style.display =
-                "none";
-
-        }
-
-        if(menuConfiguracion){
-
-            menuConfiguracion.style.display =
-                "none";
-
-        }
-
-
-        /* NO PUEDE CREAR PRESTAMOS */
-
-        if(btnNuevoPrestamo){
-
-            btnNuevoPrestamo.style.display =
-                "none";
-
-        }
-
-        if(btnNuevoPrestamoTop){
-
-            btnNuevoPrestamoTop.style.display =
-                "none";
-
-        }
-
+    if(menuReportes){
+        menuReportes.style.display = "none";
     }
 
+    if(menuUsuarios){
+        menuUsuarios.style.display = "none";
+    }
+
+    if(menuConfiguracion){
+        menuConfiguracion.style.display = "none";
+    }
+
+    /*
+       El cobrador SI puede crear préstamos.
+       Por eso NO ocultamos los botones.
+    */
+
+    return;
+
 }
+
+/* CIERRE DE aplicarPermisosUsuario */
+}
+
 document.addEventListener(
     "DOMContentLoaded",
     function(){
@@ -1968,9 +1960,12 @@ async function identificarEmpresaAutenticada(){
             data,
             error
         } = await supabaseClient
+
             .from("usuarios_empresa")
             .select(`
+                id,
                 empresa_id,
+                rol,
                 estado,
                 empresas(
                     id,
@@ -2039,9 +2034,21 @@ async function identificarEmpresaAutenticada(){
 
         }
 
+        if(!DB.sesion){
+
+            DB.sesion = {};
+
+        }
+
 
         DB.config.licencia.empresaId =
             Number(data.empresa_id);
+
+        DB.sesion.usuarioEmpresaId =
+            Number(data.id);
+
+        DB.sesion.rol =
+            data.rol;
 
         DB.guardar();
 
@@ -2336,14 +2343,33 @@ function ocultarPantallaActivacion(){
 
 function mostrarCrearAdministrador(){
 
+    console.log(
+        ">>> mostrarCrearAdministrador() ejecutada"
+    );
+
     const pantalla =
         document.getElementById(
             "pantallaCrearAdministrador"
         );
 
+    console.log(
+        "Pantalla:",
+        pantalla
+    );
+
     if(pantalla){
 
         pantalla.style.display = "flex";
+
+        console.log(
+            "Formulario mostrado."
+        );
+
+    }else{
+
+        console.error(
+            "No existe pantallaCrearAdministrador."
+        );
 
     }
 
@@ -2493,6 +2519,8 @@ async function crearAdministradorPrincipal(){
 
     }
 
+ 
+
 
    /*=========================================================
     GENERAR CONTRASEÑA SEGURA
@@ -2524,6 +2552,8 @@ try{
     return false;
 
 }
+
+
 
 
 /*=========================================================
@@ -2707,9 +2737,12 @@ async function activarEmpresa(){
 
         /* SINCRONIZAR LICENCIA */
 
+        /*=========================================================
+    SINCRONIZAR LICENCIA
+=========================================================*/
+
         const sincronizada =
             await sincronizarLicenciaCentral();
-
 
         if(!sincronizada){
 
@@ -2726,11 +2759,9 @@ async function activarEmpresa(){
 
         }
 
-
         console.log(
             "Empresa activada correctamente."
         );
-
 
         if(mensaje){
 
@@ -2739,32 +2770,28 @@ async function activarEmpresa(){
 
         }
 
-
         ocultarPantallaActivacion();
 
+        /*=========================================================
+            ¿EXISTE ADMINISTRADOR LOCAL?
+        =========================================================*/
 
-    }catch(error){
-
-        console.error(
-            "Error inesperado activando empresa:",
-            error
+        console.log(
+            "DB.usuarios:",
+            DB.usuarios
         );
 
-
-        if(mensaje){
-
-            mensaje.textContent =
-                "Ocurrió un error durante la activación.";
-
-        }
-
-    }
+        console.log(
+            "Cantidad usuarios:",
+            Array.isArray(DB.usuarios)
+                ? DB.usuarios.length
+                : "NO ES ARRAY"
+        );
 
         if(
             !Array.isArray(DB.usuarios) ||
             DB.usuarios.length === 0
         ){
-
 
             mostrarCrearAdministrador();
 
@@ -2773,7 +2800,29 @@ async function activarEmpresa(){
             mostrarLogin();
 
         }
-}
+
+        return;
+
+
+            }catch(error){
+
+                console.error(
+                    "Error inesperado activando empresa:",
+                    error
+                );
+
+
+                if(mensaje){
+
+                    mensaje.textContent =
+                        "Ocurrió un error durante la activación.";
+
+                }
+
+            }
+
+                
+        }
 
 /*=========================================================
     ACTUALIZAR PANEL DE LICENCIAS
@@ -3001,6 +3050,7 @@ document.addEventListener(
                 crearAdministradorPrincipal
             );
 
+            }
         }
-    }
 );
+
