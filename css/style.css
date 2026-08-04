@@ -400,12 +400,38 @@ body{
         box-shadow .15s ease;
 }
 
-.btn:hover{
-    transform:translateY(-1px);
+.btn-primary{
+
+    height:46px;
+
+    border:none;
+
+    border-radius:10px;
+
+    background:linear-gradient(
+        135deg,
+        #1E63E9,
+        #154EC8
+    );
+
+    font-weight:600;
+
+    transition:all .25s ease;
+
 }
 
-.btn-primary{
-    box-shadow:0 4px 10px rgba(13,110,253,.15);
+.btn-primary:hover{
+
+    transform:translateY(-2px);
+
+    box-shadow:0 12px 25px rgba(30,99,233,.25);
+
+    background:linear-gradient(
+        135deg,
+        #2B73F0,
+        #1E63E9
+    );
+
 }
 
 .btn-success{
@@ -843,15 +869,27 @@ label{
 
 .search-box .form-control{
 
-    padding-left:42px;
+    height:46px;
 
-    background:#f8fafc;
+    border-radius:10px;
+
+    border:1px solid #D7E2F0;
+
+    background:#F8FBFF;
+
+    font-size:14px;
+
+    transition:all .25s ease;
 
 }
 
-.search-box .form-control:focus{
+.form-control:focus{
 
-    background:#fff;
+    background:#FFFFFF;
+
+    border-color:#1E63E9;
+
+    box-shadow:0 0 0 4px rgba(30,99,233,.12);
 
 }
 
@@ -2071,5 +2109,19 @@ SIDEBAR BKC
     color:rgba(255,255,255,.65);
 
     font-size:12px;
+
+}
+
+.input-group-text{
+
+    background:#FFFFFF;
+
+    border:1px solid #D7E2F0;
+
+    border-right:none;
+
+    color:#1E63E9;
+
+    border-radius:10px 0 0 10px;
 
 }
