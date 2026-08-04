@@ -6,14 +6,14 @@
 /* ===================== VARIABLES ===================== */
 
 :root{
-    --primary:#0F4C81;
-    --primary-dark:#083A8C;
+    --primary:#0d6efd;
+    --primary-dark:#084298;
     --primary-soft:#e8f1ff;
 
     --sidebar:#0b1f3a;
     --sidebar-hover:#163a63;
 
-    --success:#00A86B;
+    --success:#198754;
     --warning:#f59e0b;
     --danger:#dc3545;
 
@@ -36,7 +36,7 @@
     margin:0;
     padding:0;
     box-sizing:border-box;
-    font-family:'Poppins',sans-serif;
+    font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
 }
 
 body{
@@ -78,7 +78,7 @@ body{
 .logo{
     min-height:105px;
 
-    padding:20px 15px;
+    padding:24px 20px;
 
     display:flex;
 
@@ -1787,12 +1787,11 @@ label{
     height:100vh;
 
     background:
-    linear-gradient(
-    135deg,
-    #F5F7FB 0%,
-    #EAF2FF 45%,
-    #DDEEFF 100%
-    );
+        linear-gradient(
+            135deg,
+            #0d6efd,
+            #084298
+        );
 
     display:flex;
 
@@ -1811,17 +1810,17 @@ label{
 
     width:100%;
 
-    max-width:460px;
+    max-width:420px;
 
     background:#ffffff;
 
-    padding:48px;
+    padding:40px;
 
-    border-radius:24px;
+    border-radius:20px;
 
     box-shadow:
-        0 25px 60px
-        rgba(15,23,42,.15);
+        0 20px 50px
+        rgba(0,0,0,.25);
 
 }
 
@@ -1949,47 +1948,5 @@ label{
     font-size:11px;
 
     color:#6c757d;
-
-}
-
-/*==========================================
-BKC BRANDING
-==========================================*/
-
-.logo{
-
-    padding:20px 15px;
-
-    display:flex;
-
-    justify-content:center;
-
-    align-items:center;
-
-    border-bottom:1px solid rgba(255,255,255,.08);
-
-    background:linear-gradient(
-        180deg,
-        #102B54,
-        #0B1F3A
-    );
-
-}
-
-.logo-bkc{
-
-    width:170px;
-
-    max-width:100%;
-
-    height:auto;
-
-    transition:.30s;
-
-}
-
-.logo-bkc:hover{
-
-    transform:scale(1.03);
 
 }
