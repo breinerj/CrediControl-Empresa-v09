@@ -1,7 +1,42 @@
 <!DOCTYPE html>
 <html lang="es">
 
+<!-- ==========================
+     PWA BKC
+========================== -->
+
+<link rel="manifest" href="manifest.json">
+
+<meta name="theme-color" content="#1E63E9">
+
+<meta
+    name="apple-mobile-web-app-capable"
+    content="yes">
+
+<meta
+    name="apple-mobile-web-app-status-bar-style"
+    content="default">
+
+<meta
+    name="apple-mobile-web-app-title"
+    content="BKC">
+
+<link
+    rel="icon"
+    href="assets/branding/favicon.png">
+
+<link
+    rel="apple-touch-icon"
+    href="assets/icons/icon-192.png">
+
+
 <head>
+
+    <link rel="manifest" href="manifest.json">
+
+    <meta name="theme-color" content="#1E63E9">
+
+    <link rel="icon" href="assets/branding/favicon.png">
 
     <meta charset="UTF-8">
 
@@ -22,6 +57,7 @@
     <link rel="stylesheet" href="css/style.css">
 
 </head>
+
 
 <body>
 
@@ -3146,6 +3182,37 @@
     </div>
 
 </div>
+
+<script>
+
+if ("serviceWorker" in navigator) {
+
+    window.addEventListener("load", async () => {
+
+        try {
+
+            const registro =
+                await navigator.serviceWorker.register("./sw.js");
+
+            console.log(
+                "Service Worker registrado:",
+                registro.scope
+            );
+
+        } catch (error) {
+
+            console.error(
+                "No fue posible registrar el Service Worker.",
+                error
+            );
+
+        }
+
+    });
+
+}
+
+</script>
 
 </body>
 
