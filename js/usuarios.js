@@ -2124,7 +2124,7 @@ async function sincronizarLicenciaCentral(){
         if(!data){
 
             console.error(
-                "Empresa no encontrada en CrediControl Central."
+                "Empresa no encontrada en BKC Central."
             );
 
             return false;
@@ -2195,7 +2195,7 @@ async function inicializarConexionCentral(){
     try{
 
         console.log(
-            "Iniciando conexión con CrediControl Central..."
+            "Iniciando conexión con BKC Central..."
         );
 
 
@@ -2271,7 +2271,7 @@ async function inicializarConexionCentral(){
 
 
         console.log(
-            "CrediControl Central sincronizado correctamente."
+            "BKC Central sincronizado correctamente."
         );
 
 
@@ -2931,7 +2931,7 @@ async function solicitarNuevoCupo(){
 
 
             alert(
-                "No se pudo enviar la solicitud a CrediControl Central."
+                "No se pudo enviar la solicitud a BKC Central."
             );
 
 
@@ -2951,7 +2951,7 @@ async function solicitarNuevoCupo(){
 
             "Estado: PENDIENTE\n\n" +
 
-            "El administrador de CrediControl debe aprobarla."
+            "El administrador de BKC debe aprobarla."
 
         );
 

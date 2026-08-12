@@ -20,5 +20,5 @@ const supabaseClient =
 
 
 console.log(
-    "CrediControl Empresa conectado a Supabase"
+    "BKC Empresa conectado a Supabase"
 );

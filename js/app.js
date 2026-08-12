@@ -42,7 +42,7 @@ async function iniciarAplicacion(){
         }catch(error){
 
             console.error(
-                "Error conectando con CrediControl Central:",
+                "Error conectando con BKC Central:",
                 error
             );
 

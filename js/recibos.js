@@ -150,13 +150,13 @@ async function generarReciboPDF(idPago){
 
 const datosQR = [
 
-    "CREDICONTROL",
+    "BKC",
 
     "Recibo: " +
         (pago.recibo || ""),
 
     "Empresa: " +
-        (empresa.nombre || "CrediControl"),
+        (empresa.nombre || "BKC"),
 
     "Cliente: " +
         (cliente ? cliente.nombre : ""),
@@ -255,7 +255,7 @@ if(empresa.logo){
         );
 
         doc.text(
-            empresa.nombre || "CrediControl",
+            empresa.nombre || "BKC",
             105,
             20,
             {
@@ -897,7 +897,7 @@ function compartirReciboWhatsApp(idPago){
 
         const empresa =
             DB.config.empresa?.nombre ||
-            "CrediControl";
+            "BKC";
 
 
         /* MENSAJE */

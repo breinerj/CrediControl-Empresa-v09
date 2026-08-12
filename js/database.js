@@ -200,7 +200,7 @@ const DB = {
                         .empresa
                         ?.nombre
 
-                    || "CrediControl",
+                    || "BKC",
 
 
                 razonSocial:
