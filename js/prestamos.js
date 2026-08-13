@@ -449,7 +449,10 @@ function listarPrestamos(){
     tabla.innerHTML="";
 
     DB.prestamos
-    .filter(prestamo => !prestamo.archivado)
+        .filter(prestamo =>
+            !prestamo.archivado &&
+            prestamo.estado === "ACTIVO"
+        )
     .forEach(prestamo=>{
 
         let cliente = DB.clientes.find(
@@ -655,7 +658,7 @@ document.getElementById("resumenPrestamo").innerHTML = `
 
     <div class="col-md-3">
 
-        <strong>Capital:</strong><br>
+        <strong>Capital Prestado:</strong><br>
 
         ${dinero(prestamo.capital)}
 
@@ -663,7 +666,7 @@ document.getElementById("resumenPrestamo").innerHTML = `
 
     <div class="col-md-3">
 
-        <strong>Saldo:</strong><br>
+        <strong>Saldo Total:</strong><br>
 
         ${dinero(prestamo.saldoTotal)}
 
@@ -743,9 +746,21 @@ document.getElementById("resumenPrestamo").innerHTML = `
 
     cargarCronograma(prestamo);
 
-    if(modalPago){
+    const elementoModalPago =
+    document.getElementById("modalPago");
 
-    modalPago.hide();
+    if(elementoModalPago){
+
+        const instanciaPago =
+            bootstrap.Modal.getInstance(
+                elementoModalPago
+            );
+
+        if(instanciaPago){
+
+            instanciaPago.hide();
+
+    }
 
 }
 
@@ -1033,12 +1048,22 @@ async function agregarPrestamoSupabase(prestamo){
 
         const codigo = "PRE-" + String(data.id).padStart(6, "0");
 
-        await supabaseClient
-            .from("prestamos")
-            .update({
-                codigo: codigo
-            })
-            .eq("id", data.id);
+        const { error: errorCodigo } =
+            await supabaseClient
+                .from("prestamos")
+                .update({
+                    codigo: codigo
+                })
+                .eq("id", data.id);
+
+        if(errorCodigo){
+
+            console.error(
+                "Error actualizando código del préstamo:",
+                errorCodigo
+            );
+
+        }
 
         data.codigo = codigo;
 

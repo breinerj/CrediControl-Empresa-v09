@@ -85,7 +85,7 @@ async function obtenerResumenDashboardSupabase(){
 
             resumen.capitalPendiente +=
                 Number(
-                    prestamo.saldo_total || 0
+                    prestamo.saldo_capital || 0
                 );
 
             resumen.interesesRecuperados +=
@@ -208,6 +208,11 @@ async function obtenerCobrosSupabase(){
             .neq(
                 "estado",
                 "PAGADA"
+            )
+
+            .eq(
+                "activo",
+                true
             )
             .lte(
                 "fecha",

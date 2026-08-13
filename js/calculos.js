@@ -391,29 +391,105 @@ function actualizarVistaPreviaCronograma(){
     });
 
 }
-/*=========================================================
-        CALCULAR SALDO
-=========================================================*/
+
 
 function recalcularSaldo(prestamo){
 
-    let saldo=0;
+    let saldoTotal = 0;
 
-    prestamo.cronograma.forEach(c=>{
+    let capitalRecuperado = 0;
 
-        if(c.estado!="PAGADA"){
+    let interesRecuperado = 0;
 
-            saldo+=c.valor-c.pagado;
 
-        }
+    /*
+        RECORRER LAS CUOTAS DEL PRÉSTAMO
+    */
+
+    prestamo.cronograma.forEach(cuota => {
+
+        const valorCuota =
+            Number(cuota.valor || 0);
+
+        const pagado =
+            Number(cuota.pagado || 0);
+
+        const pendiente =
+            Math.max(
+                0,
+                valorCuota - pagado
+            );
+
+
+        saldoTotal += pendiente;
 
     });
 
-    prestamo.saldoTotal=saldo;
+
+    /*
+        RECUPERACIÓN FINANCIERA
+    */
+
+    (DB.pagos || []).forEach(pago => {
+
+        const mismoPrestamo =
+            Number(
+                pago.prestamo ||
+                pago.prestamoId
+            ) ===
+            Number(prestamo.id);
+
+
+        if(!mismoPrestamo){
+
+            return;
+
+        }
+
+
+        capitalRecuperado +=
+            Number(
+                pago.capitalPagado || 0
+            );
+
+
+        interesRecuperado +=
+            Number(
+                pago.interesPagado || 0
+            );
+
+    });
+
+
+    /*
+        ACTUALIZAR RESUMEN DEL PRÉSTAMO
+    */
+
+    prestamo.capitalRecuperado =
+        capitalRecuperado;
+
+
+    prestamo.interesRecuperado =
+        interesRecuperado;
+
+
+    prestamo.saldoCapital =
+        Math.max(
+            0,
+            Number(prestamo.capital || 0) -
+            capitalRecuperado
+        );
+
+
+    prestamo.saldoTotal =
+        saldoTotal;
+
 
     DB.guardar();
 
 }
+
+
 /*=========================================================
     NUEVO MOTOR FINANCIERO
 =========================================================*/

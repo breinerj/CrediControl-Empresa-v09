@@ -389,24 +389,35 @@ async function abrirPago(idPrestamo, numeroCuota){
     ).value =
         cliente.nombre;
 
-    const saldoCuota =
-        Number(cuota.valor || 0) -
-        Number(cuota.pagado || 0);
+console.log("CUOTA PARA COBRO:", {
+    id: cuota.id,
+    numero: cuota.numero,
+    valor: cuota.valor,
+    pagado: cuota.pagado,
+    estado: cuota.estado,
+    saldo: cuota.saldo
+});
 
-    document.getElementById(
-        "lblValorCuotaPago"
-    ).value =
-        dinero(saldoCuota);
+const saldoCuota =
+    Number(cuota.valor || 0) -
+    Number(cuota.pagado || 0);
 
-    document.getElementById(
-        "valorPago"
-    ).value =
-        saldoCuota;
+    
 
-    document.getElementById(
-        "observacionPago"
-    ).value =
-        "";
+document.getElementById(
+    "lblValorCuotaPago"
+).value =
+    dinero(saldoCuota);
+
+document.getElementById(
+    "valorPago"
+).value =
+    saldoCuota;
+
+document.getElementById(
+    "observacionPago"
+).value =
+    "";
 
     /*
         ABRIR MODAL
@@ -531,27 +542,59 @@ async function guardarPago(){
 
         );
 
-    cuota.pagado+=valor;
-
-    if(cuota.pagado>=cuota.valor){
-
-        cuota.pagado=cuota.valor;
-
-        cuota.estado="PAGADA";
-
-    }else{
-
-        cuota.estado="PARCIAL";
-
-    }
     /*=========================================================
-    ACTUALIZAR RECUPERACION
+    DISTRIBUIR PAGO Y ACTUALIZAR RECUPERACIÓN
 =========================================================*/
+
+/*
+    SALDO DE LA CUOTA ANTES DEL NUEVO PAGO
+*/
+
+const saldoCuotaAntes =
+    Math.max(
+        0,
+        Number(cuota.valor || 0) -
+        Number(cuota.pagado || 0)
+    );
+
+
+/*
+    VALIDAR QUE TODAVÍA EXISTA SALDO
+*/
+
+if(saldoCuotaAntes <= 0){
+
+    alert(
+        "La cuota ya no tiene saldo pendiente."
+    );
+
+    return;
+
+}
+
+
+/*
+    EL PAGO NO PUEDE SUPERAR EL SALDO
+    REAL DE LA CUOTA
+*/
+
+const valorAplicado =
+    Math.min(
+        Number(valor),
+        saldoCuotaAntes
+    );
+
+
+/*
+    CONSULTAR PAGOS ANTERIORES
+    DE ESTA CUOTA
+*/
 
 const pagosAnteriores =
     await obtenerPagosCuotaSupabase(
         cuota.id
     );
+
 
 if(!pagosAnteriores){
 
@@ -563,62 +606,132 @@ if(!pagosAnteriores){
 
 }
 
-const capitalPendiente =
+
+/*
+    CAPITAL E INTERÉS QUE TODAVÍA
+    FALTAN POR RECUPERAR
+*/
+
+const capitalPendienteCuota =
     Math.max(
         0,
-        Number(cuota.capital) -
-        Number(pagosAnteriores.capital)
+        Number(cuota.capital || 0) -
+        Number(pagosAnteriores.capital || 0)
     );
 
-const interesPendiente =
+
+const interesPendienteCuota =
     Math.max(
         0,
-        Number(cuota.interes) -
-        Number(pagosAnteriores.interes)
+        Number(cuota.interes || 0) -
+        Number(pagosAnteriores.interes || 0)
     );
 
 
-let capitalPagado =
+/*
+    APLICAR PRIMERO A CAPITAL
+*/
+
+const capitalPagado =
     Math.min(
-        capitalPendiente,
-        valor
+        capitalPendienteCuota,
+        valorAplicado
     );
 
 
-let restante =
-    valor - capitalPagado;
+/*
+    REMANENTE DEL PAGO
+*/
+
+const restantePago =
+    valorAplicado -
+    capitalPagado;
 
 
-let interesPagado =
+/*
+    REMANENTE A INTERÉS
+*/
+
+const interesPagado =
     Math.min(
-        interesPendiente,
-        restante
+        interesPendienteCuota,
+        restantePago
     );
+
+
+/*
+    ACTUALIZAR RECUPERACIÓN DEL PRÉSTAMO
+*/
 
 prestamo.capitalRecuperado =
+    Number(
+        prestamo.capitalRecuperado || 0
+    ) +
+    capitalPagado;
 
-    Number(prestamo.capitalRecuperado || 0)
-
-    + capitalPagado;
 
 prestamo.interesRecuperado =
+    Number(
+        prestamo.interesRecuperado || 0
+    ) +
+    interesPagado;
 
-    Number(prestamo.interesRecuperado || 0)
 
-    + interesPagado;
+/*
+    RESTAR ÚNICAMENTE EL CAPITAL
+    DEL SALDO A CAPITAL
+*/
 
 prestamo.saldoCapital =
-
     Math.max(
-
         0,
-
-        Number(prestamo.saldoCapital || 0)
-
-        - capitalPagado
-
+        Number(
+            prestamo.saldoCapital || 0
+        ) -
+        capitalPagado
     );
 
+
+/*
+    AHORA SÍ ACTUALIZAMOS LO PAGADO
+    DE LA CUOTA
+*/
+
+cuota.pagado =
+    Number(cuota.pagado || 0) +
+    valorAplicado;
+
+
+if(
+    cuota.pagado >=
+    Number(cuota.valor || 0)
+){
+
+    cuota.pagado =
+        Number(cuota.valor || 0);
+
+    cuota.estado =
+        "PAGADA";
+
+}else{
+
+    cuota.estado =
+        "PARCIAL";
+
+}
+
+
+/*
+    VALOR REAL REGISTRADO
+*/
+
+const valorRealPago =
+    valorAplicado;
+
+
+
+    
+ 
     /*=========================================================
     USUARIO QUE REGISTRA EL PAGO
 =========================================================*/
@@ -648,7 +761,7 @@ const nuevoPago = {
         new Date().toISOString(),
 
     valor:
-        valor,
+        valorRealPago,
 
     capitalPagado:
         capitalPagado,
@@ -698,6 +811,13 @@ const nuevoPago = {
         return;
 
 }
+
+    console.log("CUOTA ANTES DE SUPABASE:", {
+        id: cuota.id,
+        pagado: cuota.pagado,
+        estado: cuota.estado,
+        valor: cuota.valor
+    });
 
     const cuotaActualizada =
         await actualizarCuotaSupabase(
