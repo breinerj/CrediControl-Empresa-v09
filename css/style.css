@@ -376,7 +376,9 @@ body{
 
     border-radius:14px;
 
-    overflow:hidden;
+    overflow-x:auto;
+    overflow-y:hidden;
+    -webkit-overflow-scrolling:touch;
 
     box-shadow:var(--shadow-sm);
 }
@@ -560,7 +562,13 @@ label{
 
     .sidebar{
         width:72px;
+
     }
+
+.table-responsive table{
+    min-width:700px;
+}
+    
 
     .logo{
         min-height:80px;
@@ -905,6 +913,8 @@ label{
     box-shadow:none;
 
 }
+
+
 
 
 /* ACCIONES */
