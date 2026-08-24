@@ -18,6 +18,40 @@ document.addEventListener(
 
 async function iniciarAplicacion(){
 
+
+        /*=====================================================
+        MOVER MODALES DIRECTAMENTE AL BODY
+    =====================================================*/
+
+    const modales = [
+
+        "modalCliente",
+
+        "modalPrestamo",
+
+        "modalUsuario",
+
+        "modalCronograma",
+
+        "modalPago",
+
+        "modalReestructuracion"
+
+    ];
+
+    modales.forEach(id => {
+
+        const modal =
+            document.getElementById(id);
+
+        if(modal){
+
+            document.body.appendChild(modal);
+
+        }
+
+    });
+
     /*=====================================================
         CONEXION AUTOMATICA CON CREDICONTROL CENTRAL
     =====================================================*/
