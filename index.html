@@ -56,6 +56,8 @@
 
     <link rel="stylesheet" href="css/style.css">
 
+    <link rel="stylesheet" href="css/responsive.css">
+
 </head>
 
 
@@ -302,59 +304,63 @@
 
             <header class="topbar">
 
+                <button id="btnMenuMovil" class="menu-toggle" type="button">
+                    <i class="fa fa-bars"></i>
+                </button>
+
                 <!-- USUARIO ACTIVO -->
 
-<div class="usuario-sesion">
+            <div class="usuario-sesion">
 
-    <div class="usuario-avatar">
+                <div class="usuario-avatar">
 
-        <i class="fa fa-user"></i>
-
-    </div>
-
-    <div class="usuario-info">
-
-        <strong id="nombreUsuarioSesion">
-            Usuario
-        </strong>
-
-        <small id="rolUsuarioSesion">
-            Rol
-        </small>
-
-    </div>
-
-    <button
-        id="btnCerrarSesion"
-        class="btn btn-outline-danger btn-sm">
-
-        <i class="fa fa-right-from-bracket"></i>
-
-        Cerrar sesión
-
-    </button>
-
-</div>
-
-                <div>
-
-                    <h3>
-
-                        Bienvenido
-
-                    </h3>
-
-                    <p>
-
-                        Sistema Profesional de Administración de Créditos
-
-                    </p>
+                    <i class="fa fa-user"></i>
 
                 </div>
 
-                
+                <div class="usuario-info">
 
-            </header>
+                    <strong id="nombreUsuarioSesion">
+                        Usuario
+                    </strong>
+
+                    <small id="rolUsuarioSesion">
+                        Rol
+                    </small>
+
+                </div>
+
+                <button
+                    id="btnCerrarSesion"
+                    class="btn btn-outline-danger btn-sm">
+
+                    <i class="fa fa-right-from-bracket"></i>
+
+                    Cerrar sesión
+
+                </button>
+
+            </div>
+
+                            <div>
+
+                                <h3>
+
+                                    Bienvenido
+
+                                </h3>
+
+                                <p>
+
+                                    Sistema Profesional de Administración de Créditos
+
+                                </p>
+
+                            </div>
+
+                            
+
+                        </header>
 
            <!-- =============================
         DASHBOARD
@@ -3213,6 +3219,8 @@ if ("serviceWorker" in navigator) {
 }
 
 </script>
+
+
 
 </body>
 

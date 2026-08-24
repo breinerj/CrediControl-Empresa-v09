@@ -1,4 +1,4 @@
-const CACHE = "bkc-v1";
+const CACHE = "bkc-v2";
 
 const ARCHIVOS = [
 
@@ -28,13 +28,26 @@ self.addEventListener("fetch", event => {
 
     event.respondWith(
 
-        caches.match(event.request)
+        fetch(event.request)
 
-            .then(response =>
+            .then(response => {
 
-                response || fetch(event.request)
+                const copia = response.clone();
 
-            )
+                caches.open(CACHE)
+                    .then(cache => {
+                        cache.put(event.request, copia);
+                    });
+
+                return response;
+
+            })
+
+            .catch(() => {
+
+                return caches.match(event.request);
+
+            })
 
     );
 

@@ -1,3 +1,5 @@
+console.log("VERSION NUEVA APP - PRUEBA 12345");
+
 console.log("APP.JS CARGADO", new Date().toLocaleTimeString());
 
 /*=========================================================
@@ -135,18 +137,45 @@ async function iniciarAplicacion(){
 function configurarMenu(){
 
     const opciones = document.querySelectorAll(".menu li");
+    const sidebar = document.querySelector(".sidebar");
+    const btnMenuMovil = document.getElementById("btnMenuMovil");
+
+    /* ABRIR Y CERRAR MENU MOVIL */
+
+    if(btnMenuMovil && sidebar){
+
+        btnMenuMovil.addEventListener("click", function(){
+
+            sidebar.classList.toggle("show");
+
+        });
+
+    }
+
+    /* OPCIONES DEL MENU */
 
     opciones.forEach(opcion=>{
 
-        opcion.addEventListener("click",function(){
+        opcion.addEventListener("click", function(){
 
             opciones.forEach(x=>x.classList.remove("active"));
 
             this.classList.add("active");
 
-            let pagina=this.dataset.page;
+            const pagina = this.dataset.page;
 
             mostrarPagina(pagina);
+
+            /* CERRAR MENU DESPUES DE ELEGIR UNA OPCION */
+
+            if(
+                sidebar &&
+                window.innerWidth <= 992
+            ){
+
+                sidebar.classList.remove("show");
+
+            }
 
         });
 
@@ -154,19 +183,24 @@ function configurarMenu(){
 
 }
 
+/*=========================================================
+    MOSTRAR PAGINA
+=========================================================*/
+
 function mostrarPagina(nombre){
 
-    document.querySelectorAll(".page").forEach(p=>{
+    document.querySelectorAll(".page").forEach(pagina => {
 
-        p.classList.add("d-none");
+        pagina.classList.add("d-none");
 
     });
 
-    const pagina=document.getElementById(nombre);
+    const paginaSeleccionada =
+        document.getElementById(nombre);
 
-    if(pagina){
+    if(paginaSeleccionada){
 
-        pagina.classList.remove("d-none");
+        paginaSeleccionada.classList.remove("d-none");
 
     }
 

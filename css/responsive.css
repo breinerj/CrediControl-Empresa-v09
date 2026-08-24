@@ -1,0 +1,361 @@
+/*======================================================
+    BKCrediControl
+    RESPONSIVE.CSS
+    Sprint 9
+======================================================*/
+
+
+/*=============================
+SIDEBAR MOVIL
+=============================*/
+
+@media (max-width:768px){
+
+    .sidebar{
+
+        position:fixed;
+
+        top:0;
+
+        left:0;
+
+        width:260px;
+
+        height:100vh;
+
+        transform:translateX(-100%);
+
+        transition:transform .30s ease;
+
+        z-index:2000;
+
+    }
+
+    .sidebar.show{
+
+        transform:translateX(0);
+
+    }
+
+}
+
+
+/*=============================
+CONTENIDO
+=============================*/
+
+@media (max-width:768px){
+
+    .contenido{
+
+        margin-left:0 !important;
+
+        width:100% !important;
+
+        padding:15px;
+
+    }
+
+}
+
+
+/*=============================
+BOTON MENU
+=============================*/
+/*=========================================================
+BOTON MENU MOVIL
+=========================================================*/
+
+.menu-toggle{
+    display:none;
+}
+
+@media (max-width:992px){
+
+    .menu-toggle{
+
+        display:flex !important;
+
+        align-items:center;
+
+        justify-content:center;
+
+        flex:0 0 46px;
+
+        width:46px;
+
+        height:46px;
+
+        border:none;
+
+        border-radius:10px;
+
+        background:#0d6efd;
+
+        color:#fff;
+
+        font-size:20px;
+
+        cursor:pointer;
+
+        padding:0;
+
+    }
+
+}
+
+
+
+/*=============================
+TOPBAR MOVIL
+=============================*/
+
+@media (max-width:768px){
+
+    .topbar{
+
+        display:flex;
+
+        align-items:center;
+
+        justify-content:flex-start;
+
+        gap:15px;
+
+    }
+
+}
+
+/*==========================================
+OVERLAY MENU
+==========================================*/
+
+.menu-overlay{
+
+    position:fixed;
+
+    top:0;
+
+    left:0;
+
+    width:100%;
+
+    height:100%;
+
+    background:rgba(0,0,0,.45);
+
+    backdrop-filter:blur(2px);
+
+    opacity:0;
+
+    visibility:hidden;
+
+    transition:.30s;
+
+    z-index:1500;
+
+}
+
+.menu-overlay.show{
+
+    opacity:1;
+
+    visibility:visible;
+
+}
+
+/*=========================================================
+SIDEBAR MOVIL PROFESIONAL
+=========================================================*/
+
+@media (max-width:992px){
+
+    .sidebar{
+
+        position:fixed;
+
+        top:0;
+
+        left:0;
+
+        width:280px;
+
+        max-width:85%;
+
+        height:100vh;
+
+        transform:translateX(-100%);
+
+        transition:transform .35s ease;
+
+        z-index:2000;
+
+        overflow-y:auto;
+
+        box-shadow:0 0 25px rgba(0,0,0,.25);
+
+    }
+
+    .sidebar.show{
+
+        transform:translateX(0);
+
+    }
+
+    .contenido{
+
+        width:100% !important;
+
+        margin-left:0 !important;
+
+        padding:15px !important;
+
+        max-width:100%;
+
+        overflow-x:hidden;
+
+}
+
+}
+
+/*=========================================================
+TOPBAR RESPONSIVE
+=========================================================*/
+
+@media (max-width:992px){
+
+    .topbar{
+
+        display:flex;
+
+        align-items:center;
+
+        justify-content:space-between;
+
+        gap:12px;
+
+        padding:12px 15px;
+
+        flex-wrap:wrap;
+
+    }
+
+    .topbar h1{
+
+        font-size:20px;
+
+        margin:0;
+
+        flex:1;
+
+    }
+
+    .topbar .acciones{
+
+        width:100%;
+
+        display:flex;
+
+        justify-content:flex-end;
+
+        gap:10px;
+
+        margin-top:10px;
+
+    }
+
+}
+
+/*=========================================================
+DASHBOARD RESPONSIVE
+=========================================================*/
+
+@media (max-width:992px){
+
+    .dashboard-cards,
+    .cards-dashboard,
+    .dashboard-grid{
+
+        display:grid;
+
+        grid-template-columns:1fr;
+
+        gap:15px;
+
+    }
+
+    .card-dashboard,
+    .dashboard-card,
+    .card-resumen{
+
+        width:100%;
+
+        margin:0;
+
+    }
+
+}
+@media (max-width:576px){
+
+    .card-dashboard,
+    .dashboard-card,
+    .card-resumen{
+
+        border-radius:14px;
+        padding:18px;
+
+    }
+
+    .card-dashboard h2,
+    .dashboard-card h2{
+
+        font-size:26px;
+
+    }
+
+}
+
+@media (max-width:992px){
+
+    main{
+
+        width:100% !important;
+
+        max-width:100% !important;
+
+    }
+
+    body{
+
+        overflow-x:hidden;
+
+    }
+
+}
+
+/* BOTÓN MENÚ MÓVIL */
+
+.btn-menu-movil{
+    display:none;
+}
+
+@media (max-width:992px){
+
+    .btn-menu-movil{
+        display:flex;
+        align-items:center;
+        gap:8px;
+
+        padding:10px 14px;
+
+        border:none;
+        border-radius:8px;
+
+        cursor:pointer;
+
+        margin-bottom:12px;
+    }
+
+}
+
+

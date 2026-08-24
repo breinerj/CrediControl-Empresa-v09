@@ -370,14 +370,17 @@ body{
 /* ===================== CONTENEDORES DE TABLAS ===================== */
 
 .table-responsive{
+    display:block;
+    width:100%;
+    max-width:100%;
+
     background:var(--surface);
-
     border:1px solid var(--border);
-
     border-radius:14px;
 
     overflow-x:auto;
     overflow-y:hidden;
+
     -webkit-overflow-scrolling:touch;
 
     box-shadow:var(--shadow-sm);
@@ -556,98 +559,6 @@ label{
 }
 
 
-/* ===================== RESPONSIVE ===================== */
-
-@media(max-width:900px){
-
-    .sidebar{
-        width:72px;
-
-    }
-
-.table-responsive table{
-    min-width:700px;
-}
-    
-
-    .logo{
-        min-height:80px;
-
-        padding:15px 5px;
-    }
-
-    .logo h2{
-        font-size:0;
-    }
-
-    .logo h2::first-letter{
-        font-size:24px;
-    }
-
-    .logo small{
-        display:none;
-    }
-
-    .menu{
-        padding:15px 8px;
-    }
-
-    .menu li{
-        justify-content:center;
-
-        padding:14px 8px;
-
-        font-size:0;
-    }
-
-    .menu li i{
-        width:auto;
-
-        font-size:20px;
-    }
-
-    .menu li:hover{
-        transform:none;
-    }
-
-    .contenido{
-        margin-left:72px;
-
-        width:calc(100% - 72px);
-
-        padding:22px 18px;
-    }
-
-    .topbar{
-        align-items:flex-start;
-    }
-
-}
-
-
-@media(max-width:576px){
-
-    .contenido{
-        padding:18px 12px;
-    }
-
-    .topbar h3{
-        font-size:23px;
-    }
-
-    .indicador{
-        padding:18px;
-    }
-
-    .indicador h2{
-        font-size:23px;
-    }
-
-    .modal-body{
-        padding:18px;
-    }
-
-}
 /* =====================================================
    SPRINT 6 - DASHBOARD
    ===================================================== */
@@ -823,7 +734,7 @@ label{
 
     box-shadow:var(--shadow-sm);
 
-    overflow:hidden;
+    overflow:visible;
 
 }
 
@@ -926,39 +837,7 @@ label{
 }
 
 
-/* RESPONSIVE */
 
-@media(max-width:768px){
-
-    .module-header{
-
-        align-items:flex-start;
-
-        flex-direction:column;
-
-    }
-
-    .module-header .btn{
-
-        width:100%;
-
-    }
-
-    .module-toolbar{
-
-        flex-direction:column;
-
-        align-items:stretch;
-
-    }
-
-    .search-box{
-
-        max-width:none;
-
-    }
-
-}
 
 /* =====================================================
    SPRINT 6 - MODULO PRESTAMOS
@@ -1471,49 +1350,7 @@ label{
 }
 
 
-/* RESPONSIVE */
 
-@media(max-width:900px){
-
-    .logo{
-
-        justify-content:center;
-
-        padding:18px 10px;
-
-    }
-
-    .logo-info{
-
-        display:none;
-
-    }
-
-    .menu-label{
-
-        display:none;
-
-    }
-
-    .menu li span{
-
-        display:none;
-
-    }
-
-    .sidebar-footer{
-
-        display:none;
-
-    }
-
-    .menu{
-
-        padding-bottom:20px;
-
-    }
-
-}
 
 /* =====================================================
    SPRINT 6 - MODULO COBROS
