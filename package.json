@@ -1,0 +1,32 @@
+{
+  "name": "bkc-gestion-cartera",
+  "version": "1.0.0",
+  "packageManager": "npm@10.9.2",
+  "description": "Sistema de gestión de cartera BKC",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder"
+  },
+  "author": "BKC",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^44.0.0",
+    "electron-builder": "^26.0.3"
+  },
+  "build": {
+    "appId": "com.bkc.gestioncartera",
+    "productName": "BKC Gestión de Cartera",
+    "npmRebuild": false,
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}

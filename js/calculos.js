@@ -44,8 +44,14 @@ function calcularCuota(){
 
     let cuotas = meses;
 
-    if(periodicidad=="Quincenal"){
+    if(periodicidad == "Diario"){
+
+        cuotas = meses * 30;
+
+    }else if(periodicidad == "Quincenal"){
+
         cuotas = meses * 2;
+
     }
 
     let interesTotal = 0;
@@ -208,20 +214,25 @@ function generarVistaCronograma(
             </tr>
         `;
 
-        if(periodicidad=="Mensual"){
-
-            fechaPago.setMonth(
-                fechaPago.getMonth()+1
-            );
-
-        }else{
+        if(periodicidad == "Diario"){
 
             fechaPago.setDate(
-                fechaPago.getDate()+15
+                fechaPago.getDate() + 1
+            );
+
+        }else if(periodicidad == "Quincenal"){
+
+            fechaPago.setDate(
+                fechaPago.getDate() + 15
+            );
+
+        }else if(periodicidad == "Mensual"){
+
+            fechaPago.setMonth(
+                fechaPago.getMonth() + 1
             );
 
         }
-
     }
 
 }
@@ -257,11 +268,20 @@ function construirCronograma(){
 
     let tasaPeriodo = interes;
 
-    if(periodicidad=="Quincenal"){
+    if(periodicidad == "Diario"){
+
+        cuotas = meses * 30;
+
+        // Convertir la tasa mensual a tasa diaria
+        tasaPeriodo = interes / 30;
+
+    }
+    
+    else if(periodicidad == "Quincenal"){
 
         cuotas = meses * 2;
 
-        // La tasa mensual se divide entre dos
+        // Convertir la tasa mensual a tasa quincenal
         tasaPeriodo = interes / 2;
 
     }
@@ -317,16 +337,22 @@ function construirCronograma(){
 
         });
 
-        if(periodicidad=="Mensual"){
-
-            fechaPago.setMonth(
-                fechaPago.getMonth()+1
-            );
-
-        }else{
+        if(periodicidad == "Diario"){
 
             fechaPago.setDate(
-                fechaPago.getDate()+15
+                fechaPago.getDate() + 1
+            );
+
+        }else if(periodicidad == "Quincenal"){
+
+            fechaPago.setDate(
+                fechaPago.getDate() + 15
+            );
+
+        }else if(periodicidad == "Mensual"){
+
+            fechaPago.setMonth(
+                fechaPago.getMonth() + 1
             );
 
         }
@@ -577,16 +603,22 @@ function calcularPrestamoCompleto(){
 
         });
 
-        if(periodicidad=="Mensual"){
-
-            fechaPago.setMonth(
-                fechaPago.getMonth()+1
-            );
-
-        }else{
+        if(periodicidad == "Diario"){
 
             fechaPago.setDate(
-                fechaPago.getDate()+15
+                fechaPago.getDate() + 1
+            );
+
+        }else if(periodicidad == "Quincenal"){
+
+            fechaPago.setDate(
+                fechaPago.getDate() + 15
+            );
+
+        }else if(periodicidad == "Mensual"){
+
+            fechaPago.setMonth(
+                fechaPago.getMonth() + 1
             );
 
         }
