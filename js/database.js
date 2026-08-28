@@ -15,6 +15,9 @@ const STORAGE = {
 
     USUARIOS: "cc_usuarios",
 
+    USUARIOS_EMPRESA:
+    "cc_usuarios_empresa",
+
     SESION: "cc_sesion"
 
 };
@@ -29,6 +32,8 @@ const DB = {
     pagos: [],
 
     usuarios: [],
+
+    usuariosEmpresa: [],
 
     sesion: null,
 
@@ -76,6 +81,27 @@ const DB = {
         ){
 
             this.usuarios = [];
+
+        }
+
+
+        /*=================================================
+    USUARIOS EMPRESA
+=================================================*/
+
+        this.usuariosEmpresa =
+            this.cargar(
+                STORAGE.USUARIOS_EMPRESA
+            );
+
+
+        if(
+            !Array.isArray(
+                this.usuariosEmpresa
+            )
+        ){
+
+            this.usuariosEmpresa = [];
 
         }
 
@@ -516,6 +542,17 @@ const DB = {
 
             JSON.stringify(
                 this.usuarios
+            )
+
+        );
+
+
+        localStorage.setItem(
+
+            STORAGE.USUARIOS_EMPRESA,
+
+            JSON.stringify(
+                this.usuariosEmpresa
             )
 
         );

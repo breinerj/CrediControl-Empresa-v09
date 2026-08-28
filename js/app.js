@@ -1,6 +1,4 @@
-console.log("VERSION NUEVA APP - PRUEBA 12345");
 
-console.log("APP.JS CARGADO", new Date().toLocaleTimeString());
 
 /*=========================================================
     CREDICONTROL 1.0
@@ -109,14 +107,34 @@ async function iniciarAplicacion(){
     DESDE SUPABASE
 */
 
-    if(
-    typeof cargarClientesSupabase ===
-    "function"
-){
+const usuarioActual =
+    obtenerUsuarioActual();
 
-    await cargarClientesSupabase();
+console.log(
+    "Usuario antes de cargar clientes:",
+    usuarioActual
+);
+
+if(!usuarioActual){
+
+    console.warn(
+        "No hay usuario activo todavía. Se omite carga inicial de clientes."
+    );
+
+}else{
+
+    if(
+        typeof cargarClientesSupabase === "function"
+    ){
+
+        await cargarClientesSupabase();
+
+    }
 
 }
+
+    
+
 
 
     if(
@@ -240,25 +258,63 @@ function mostrarPagina(nombre){
 
 }
 
+
 /*=========================================================
     BOTONES
 =========================================================*/
 
 function configurarBotones(){
 
-    const btnCliente = document.getElementById("btnNuevoCliente");
+    const btnCliente =
+        document.getElementById("btnNuevoCliente");
 
     if(btnCliente){
-        btnCliente.addEventListener("click", abrirModalCliente);
+
+        btnCliente.addEventListener(
+            "click",
+            () => {
+
+                const modalElemento =
+                    document.getElementById(
+                        "modalCliente"
+                    );
+
+                if(!modalElemento){
+
+                    console.error(
+                        "No se encontró el modalCliente"
+                    );
+
+                    return;
+
+                }
+
+                const modal =
+                    bootstrap.Modal.getOrCreateInstance(
+                        modalElemento
+                    );
+
+                modal.show();
+
+            }
+        );
+
     }
 
-    const btnPrestamo = document.getElementById("btnNuevoPrestamo");
+
+    const btnPrestamo =
+        document.getElementById(
+            "btnNuevoPrestamo"
+        );
 
     if(btnPrestamo){
-        btnPrestamo.addEventListener("click", abrirModalPrestamo);
-    }
 
-    
+        btnPrestamo.addEventListener(
+            "click",
+            abrirModalPrestamo
+        );
+
+    }
 
 }
 
@@ -387,3 +443,5 @@ function formatoMoneda(valor){
     }
 
 });
+
+

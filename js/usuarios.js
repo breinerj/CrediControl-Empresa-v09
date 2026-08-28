@@ -1230,6 +1230,138 @@ const nuevoUsuario = {
         nuevoUsuario
     );
 
+   /*=========================================================
+    CREAR RELACION USUARIO - EMPRESA
+=========================================================*/
+
+if(
+    rol === "COBRADOR"
+){
+
+    const empresaId =
+        obtenerEmpresaIdClientes();
+
+
+    const usuarioEmpresa = {
+
+        id:
+            Date.now(),
+
+        usuario_id:
+            nuevoUsuario.id,
+
+        empresa_id:
+            empresaId,
+
+        nombre:
+            nuevoUsuario.nombre,
+
+        correo:
+            nuevoUsuario.usuario,
+
+        rol:
+            nuevoUsuario.rol,
+
+        estado:
+            "ACTIVO"
+
+    };
+
+
+    /*=========================================================
+        GUARDAR RELACION LOCAL
+    =========================================================*/
+
+    DB.usuariosEmpresa.push(
+        usuarioEmpresa
+    );
+
+
+    /*=========================================================
+        GUARDAR USUARIO EMPRESA EN SUPABASE
+    =========================================================*/
+
+    try{
+
+        console.log(
+            "INTENTANDO CREAR USUARIO EMPRESA:",
+            {
+                usuario_id:
+                    nuevoUsuario.id,
+
+                nombre:
+                    nuevoUsuario.nombre,
+
+                rol:
+                    nuevoUsuario.rol,
+
+                empresaId:
+                    empresaId
+            }
+        );
+
+
+        const {
+            data,
+            error
+        } =
+        await supabaseClient
+            .from("usuarios_empresa")
+            .insert({
+
+                usuario_id:
+                    nuevoUsuario.id,
+
+                empresa_id:
+                    empresaId,
+
+                nombre:
+                    nuevoUsuario.nombre,
+
+                correo:
+                    nuevoUsuario.usuario,
+
+                rol:
+                    nuevoUsuario.rol,
+
+                estado:
+                    "ACTIVO"
+
+            })
+            .select()
+            .single();
+
+
+        if(error){
+
+            console.error(
+                "Error creando usuario empresa en Supabase:",
+                error
+            );
+
+        }else{
+
+            console.log(
+                "Usuario empresa creado correctamente en Supabase:",
+                data
+            );
+
+        }
+
+
+    }catch(error){
+
+        console.error(
+            "Error inesperado creando usuario empresa:",
+            error
+        );
+
+    }
+
+}
+
+    
+
 
     DB.guardar();
 

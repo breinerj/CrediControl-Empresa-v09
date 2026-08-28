@@ -1,3 +1,5 @@
+
+
 /*=========================================================
     CREDICONTROL
     clientes.js
@@ -31,6 +33,7 @@ function obtenerEmpresaIdClientes(){
 
 /*=========================================================
     CARGAR CLIENTES DESDE SUPABASE
+    SEGÚN EL USUARIO ACTIVO
 =========================================================*/
 
 async function cargarClientesSupabase(){
@@ -48,25 +51,62 @@ async function cargarClientesSupabase(){
 
     }
 
+
+    const usuario =
+        obtenerUsuarioActual();
+
+    if(!usuario){
+
+        console.error(
+            "No existe un usuario activo."
+        );
+
+        return false;
+
+    }
+
+
     try{
+
+        let consulta =
+            supabaseClient
+                .from("clientes")
+                .select("*")
+                .eq(
+                    "empresa_id",
+                    empresaId
+                );
+
+
+        /*
+            SI ES COBRADOR
+            SOLO VE SUS CLIENTES ASIGNADOS
+        */
+
+        if(
+            String(usuario.rol).toUpperCase()
+            === "COBRADOR"
+        ){
+
+            consulta =
+                consulta.eq(
+                    "usuario_asignado_id",
+                    usuario.id
+                );
+
+        }
+
 
         const {
             data,
             error
         } =
-        await supabaseClient
-            .from("clientes")
-            .select("*")
-            .eq(
-                "empresa_id",
-                empresaId
-            )
-            .order(
-                "id",
-                {
-                    ascending: true
-                }
-            );
+        await consulta.order(
+            "id",
+            {
+                ascending: true
+            }
+        );
 
 
         if(error){
@@ -83,9 +123,6 @@ async function cargarClientesSupabase(){
 
         /*
             ACTUALIZAR COPIA LOCAL
-
-            Conservamos local_id como ID utilizado
-            actualmente por préstamos y demás módulos.
         */
 
         DB.clientes =
@@ -120,7 +157,23 @@ async function cargarClientesSupabase(){
                     cliente.observaciones || "",
 
                 estado:
-                    cliente.estado || "ACTIVO"
+                    cliente.estado || "ACTIVO",
+
+                empresaId:
+                    cliente.empresa_id,
+
+                administradorId:
+                    cliente.administrador_id,
+
+                usuarioAsignadoId:
+                    cliente.usuario_asignado_id,
+
+                cobradorId:
+                    cliente.cobrador_id,
+
+                estadoAsignacion:
+                    cliente.estado_asignacion ||
+                    "SIN_ASIGNAR"
 
             }));
 
@@ -131,7 +184,7 @@ async function cargarClientesSupabase(){
 
 
         console.log(
-            "Clientes sincronizados desde Supabase:",
+            "Clientes cargados:",
             DB.clientes.length
         );
 
@@ -151,7 +204,6 @@ async function cargarClientesSupabase(){
     }
 
 }
-
 /*=========================================================
     MIGRAR CLIENTES LOCALES A SUPABASE
 =========================================================*/
@@ -305,7 +357,6 @@ async function migrarClientesLocalesASupabase(){
             /*
                 PREPARAR CLIENTE PARA SUPABASE
             */
-
             const nuevoCliente = {
 
                 empresa_id:
@@ -315,7 +366,7 @@ async function migrarClientesLocalesASupabase(){
                     Number(cliente.id),
 
                 codigo:
-                    cliente.codigo || null,
+                    cliente.codigo,
 
                 nombre:
                     cliente.nombre,
@@ -342,9 +393,32 @@ async function migrarClientesLocalesASupabase(){
 
                 estado:
                     cliente.estado
-                        || "ACTIVO"
+                        || "ACTIVO",
 
-            };
+                 
+
+
+
+
+                /*
+                    COBRADOR ASIGNADO
+                */
+
+                usuario_asignado_id:
+                    cliente.usuarioAsignadoId
+                        ? Number(cliente.usuarioAsignadoId)
+                        : null,
+
+
+                /*
+                    ESTADO DE LA ASIGNACIÓN
+                */
+
+                estado_asignacion:
+                    cliente.estadoAsignacion
+                        || "SIN_ASIGNAR"
+
+};
 
 
             const {
@@ -488,21 +562,37 @@ async function migrarClientesLocalesASupabase(){
     }
 
 }
+
+/*=========================================================
+    EVENTO GUARDAR CLIENTE
+=========================================================*/
+
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        const btnGuardar =
+            document.getElementById(
+                "guardarCliente"
+            );
+
+        if(btnGuardar){
+
+            btnGuardar.addEventListener(
+                "click",
+                guardarCliente
+            );
+
+        }
+
+    }
+);
+
+
+
 /*=========================================================
     GUARDAR CLIENTE
 =========================================================*/
-
-document.addEventListener("DOMContentLoaded", () => {
-
-    const btnGuardar = document.getElementById("guardarCliente");
-
-    if (btnGuardar) {
-
-        btnGuardar.addEventListener("click", guardarCliente);
-
-    }
-
-});
 
 async function guardarCliente() {
 
@@ -512,6 +602,7 @@ async function guardarCliente() {
     const ciudad = document.getElementById("clienteCiudad").value.trim();
     const direccion = document.getElementById("clienteDireccion").value.trim();
     const observaciones = document.getElementById("clienteObservaciones").value.trim();
+    const cobradorSeleccionado = document.getElementById("clienteCobrador")?.value || "";
 
     if (nombre === "") {
 
@@ -523,8 +614,14 @@ async function guardarCliente() {
 
     // Validar cédula duplicada
     const existe = DB.clientes.find(c =>
-        c.cedula === cedula &&
-        c.id !== clienteEditando
+
+        String(c.cedula || "").trim() ===
+        String(cedula || "").trim()
+
+        &&
+
+        Number(c.id) !== Number(clienteEditando)
+
     );
 
     if (cedula !== "" && existe) {
@@ -535,28 +632,126 @@ async function guardarCliente() {
 
     }
 
+
     if (clienteEditando === null) {
 
+        const usuario =
+            obtenerUsuarioActual();
+
+        if (!usuario) {
+
+            alert(
+                "No se pudo identificar el usuario actual."
+            );
+
+            return;
+
+        }
+
+
+    const esCobrador =
+        String(usuario.rol).toUpperCase()
+        === "COBRADOR";
+
+
+    /*
+        DEFINIR EL COBRADOR
+        AL QUE QUEDARÁ ASIGNADO EL CLIENTE
+    */
+
+    const usuarioAsignadoId =
+        esCobrador
+
+            ? Number(usuario.id)
+
+            : (
+
+                cobradorSeleccionado !== ""
+
+                    ? Number(cobradorSeleccionado)
+
+                    : null
+
+            );
+
+
+    /*
+        ESTADO DEL CLIENTE
+
+        Si lo crea un cobrador,
+        queda pendiente de aprobación.
+
+        Si lo crea un administrador,
+        queda activo.
+    */
+
+    const estadoCliente =
+        esCobrador
+
+            ? "PENDIENTE_APROBACION"
+
+            : "ACTIVO";
+
+
+    const estadoAsignacion =
+        esCobrador
+
+            ? "PENDIENTE_APROBACION"
+
+            : (
+
+                usuarioAsignadoId
+
+                    ? "ASIGNADO"
+
+                    : "SIN_ASIGNAR"
+
+            );
+
+
+    /*
+        CREAR OBJETO DEL CLIENTE
+    */
+
+    const nuevoCliente = {
+
+        id:
+            generarId(),
+
+        nombre,
+
+        cedula,
+
+        telefono,
+
+        ciudad,
+
+        direccion,
+
+        observaciones,
+
+        estado:
+            estadoCliente,
+
+        empresaId:
+            usuario.empresaId,
+
+        administradorId:
+            usuario.id,       
+
+        usuarioAsignadoId:
+            usuarioAsignadoId,
+
+        estadoAsignacion:
+            estadoAsignacion
+
+    };
+
+
     const resultado =
-        await agregarClienteSupabase({
-
-            id: generarId(),
-
-            nombre,
-
-            cedula,
-
-            telefono,
-
-            ciudad,
-
-            direccion,
-
-            observaciones,
-
-            estado: "ACTIVO"
-
-        });
+        await agregarClienteSupabase(
+            nuevoCliente
+        );
 
 
     if(!resultado){
@@ -569,7 +764,10 @@ async function guardarCliente() {
 
     }
 
-} else {
+
+}
+
+else {
 
     const cliente =
         DB.clientes.find(
@@ -659,54 +857,186 @@ async function guardarCliente() {
     cerrarModalCliente();
 
 }
-
 /*=========================================================
     LISTAR CLIENTES
 =========================================================*/
 
 function listarClientes() {
 
-    const tabla = document.getElementById("tablaClientes");
+    const tabla =
+        document.getElementById("tablaClientes");
 
     if (!tabla) return;
 
+
+    /*
+        IDENTIFICAR USUARIO ACTUAL
+    */
+
+    const usuario =
+        obtenerUsuarioActual();
+
+    console.log(
+        "USUARIO DESDE LISTAR CLIENTES:",
+        usuario
+    );
+
+    if(!usuario){
+
+        console.warn(
+            "Usuario aún no disponible. Reintentando cargar clientes..."
+        );
+
+        setTimeout(
+            () => {
+                listarClientes();
+            },
+            500
+        );
+
+        return;
+
+    }
+
+
+    /*
+        FILTRAR CLIENTES
+        SEGÚN EL ROL DEL USUARIO
+    */
+
+    let clientesFiltrados = [];
+
+
+    /*
+        ADMINISTRADOR
+
+        Solo puede ver los clientes
+        que pertenecen a su cartera.
+    */
+
+    if (
+        usuario.rol === "ADMINISTRADOR"
+    ) {
+
+        clientesFiltrados =
+            DB.clientes;
+
+            }
+
+
+    /*
+        COBRADOR
+
+        Solo puede ver los clientes
+        asignados directamente a él
+        y que ya estén aprobados.
+    */
+
+    else if (
+        usuario.rol === "COBRADOR"
+    ) {
+
+        clientesFiltrados =
+            DB.clientes.filter(
+                cliente =>
+
+                    String(
+                        cliente.usuarioAsignadoId
+                    ) ===
+                    String(
+                        usuario.id
+                    )
+
+                    &&
+
+                    cliente.estado === "ACTIVO"
+            );
+
+    }
+
+
+    /*
+        LIMPIAR TABLA
+    */
+
     tabla.innerHTML = "";
 
-    DB.clientes.forEach(cliente => {
 
-        tabla.innerHTML += `
+    /*
+        MOSTRAR CLIENTES
+    */
 
-        <tr>
+    clientesFiltrados.forEach(
+        cliente => {
 
-            <td>${cliente.codigo}</td>
+            tabla.innerHTML += `
 
-            <td>${cliente.nombre}</td>
+            <tr>
 
-            <td>${cliente.cedula}</td>
+                <td>
+                    ${cliente.codigo || ""}
+                </td>
 
-            <td>${cliente.telefono}</td>
+                <td>
+                    ${cliente.nombre}
+                </td>
 
-            <td>${dinero(obtenerCapitalPrestado(cliente.id))}</td>
+                <td>
+                    ${cliente.cedula}
+                </td>
 
-            <td>${dinero(obtenerCapitalRecuperado(cliente.id))}</td>
+                <td>
+                    ${cliente.telefono}
+                </td>
 
-            <td>${dinero(obtenerSaldoCliente(cliente.id))}</td>
+                <td>
+                    ${dinero(
+                        obtenerCapitalPrestado(
+                            cliente.id
+                        )
+                    )}
+                </td>
 
-            <td>
+                <td>
+                    ${dinero(
+                        obtenerCapitalRecuperado(
+                            cliente.id
+                        )
+                    )}
+                </td>
 
-    <span class="badge bg-primary">
-
-        ${contarPrestamosActivos(cliente.id)}
-
-    </span>
-
-</td>
-
-<td>
+                <td>
+                    ${dinero(
+                        obtenerSaldoCliente(
+                            cliente.id
+                        )
+                    )}
+                </td>
 
                 <td>
 
-                    <span class="badge ${cliente.estado==="ACTIVO" ? "bg-success" : "bg-secondary"}">
+                    <span class="badge bg-primary">
+
+                        ${contarPrestamosActivos(
+                            cliente.id
+                        )}
+
+                    </span>
+
+                </td>
+
+
+                <td>
+
+                    <span class="badge 
+                        ${
+                            cliente.estado === "ACTIVO"
+
+                                ? "bg-success"
+
+                                : "bg-secondary"
+                        }
+                    ">
 
                         ${cliente.estado}
 
@@ -714,55 +1044,79 @@ function listarClientes() {
 
                 </td>
 
-            <td>
 
-                <button
-                    class="btn btn-warning btn-sm"
-                    onclick="editarCliente(${cliente.id})">
+                <td>
 
-                    Editar
+                    <button
+                        class="btn btn-warning btn-sm"
+                        onclick="editarCliente(${cliente.id})">
 
-                </button>
+                        Editar
 
-                <button
+                    </button>
 
-                    class="btn btn-info btn-sm"
 
-                    onclick="verResumenCliente(${cliente.id})">
+                    <button
+                        class="btn btn-info btn-sm"
+                        onclick="verResumenCliente(${cliente.id})">
 
-                    Resumen
+                        Resumen
 
-                </button>
+                    </button>
 
-                ${cliente.estado === "ACTIVO" ? `
 
-                <button
-                    class="btn btn-secondary btn-sm"
-                    onclick="inactivarCliente(${cliente.id})">
+                    ${
+                        cliente.estado === "ACTIVO"
 
-                    ⛔ Inactivar
+                            ? `
 
-                </button>
+                            <button
+                                class="btn btn-secondary btn-sm"
+                                onclick="inactivarCliente(${cliente.id})">
 
-                ` : `
+                                ⛔ Inactivar
 
-                <button
-                    class="btn btn-success btn-sm"
-                    onclick="reactivarCliente(${cliente.id})">
+                            </button>
 
-                    ✅ Reactivar
+                            `
 
-                </button>
+                            : `
 
-                `}
+                            <button
+                                class="btn btn-success btn-sm"
+                                onclick="reactivarCliente(${cliente.id})">
 
-            </td>
+                                ✅ Reactivar
 
-        </tr>
+                            </button>
 
-        `;
+                            `
+                    }
 
-    });
+                    ${
+                        usuario.rol === "ADMINISTRADOR"
+                            ? `
+
+                            <button
+                                class="btn btn-primary btn-sm"
+                                onclick="asignarClienteCobrador(${cliente.id})">
+
+                                👤 Asignar
+
+                            </button>
+
+                            `
+                            : ""
+                    }
+
+                </td>
+
+            </tr>
+
+            `;
+
+        }
+    );
 
 }
 
@@ -788,6 +1142,14 @@ async function actualizarClienteSupabase(cliente){
         const {
             error
         } =
+
+        console.log(
+            "DATOS QUE SE VAN A GUARDAR:",
+            {
+                cobrador_id: cobrador.id,
+                usuario_asignado_id: cobrador.usuario_id
+            }
+        );
         await supabaseClient
             .from("clientes")
             .update({
@@ -955,7 +1317,11 @@ async function agregarClienteSupabase(cliente){
 
             estado:
                 cliente.estado
-                    || "ACTIVO"
+                    || "ACTIVO",
+
+            administrador_id:
+                cliente.administradorId
+                    || null,
 
         };
 
@@ -1252,12 +1618,368 @@ async function reactivarCliente(id){
 }
 
 /*=========================================================
+    ASIGNAR CLIENTE A COBRADOR
+=========================================================*/
+
+async function asignarClienteCobrador(id) {
+
+    const usuario =
+        obtenerUsuarioActual();
+
+    /*
+        SOLO EL ADMINISTRADOR
+        PUEDE ASIGNAR CLIENTES
+    */
+
+    if (
+        !usuario ||
+        usuario.rol !== "ADMINISTRADOR"
+    ) {
+
+        alert(
+            "Solo un administrador puede asignar clientes."
+        );
+
+        return;
+
+    }
+
+
+    const cliente =
+        DB.clientes.find(
+            c =>
+                Number(c.id) === Number(id)
+        );
+
+
+    if (!cliente) {
+
+        alert(
+            "No se encontró el cliente."
+        );
+
+        return;
+
+    }
+
+
+    /*
+        BUSCAR LOS COBRADORES
+        QUE PERTENECEN AL ADMINISTRADOR ACTUAL
+    */
+
+    const cobradores =
+    await cargarCobradoresEmpresa();
+
+
+    if (cobradores.length === 0) {
+
+        alert(
+            "No tiene cobradores activos registrados."
+        );
+
+        return;
+
+    }
+
+
+    /*
+        CREAR LISTA DE COBRADORES
+    */
+
+    let mensaje =
+        "Seleccione el cobrador:\n\n";
+
+
+    cobradores.forEach(
+        (cobrador, index) => {
+
+            mensaje +=
+                `${index + 1}. ${cobrador.nombre}\n`;
+
+        }
+    );
+
+
+    const seleccion =
+        prompt(mensaje);
+
+
+    if (
+        seleccion === null
+    ) {
+
+        return;
+
+    }
+
+
+    const posicion =
+        Number(seleccion) - 1;
+
+
+    if (
+        isNaN(posicion) ||
+
+        posicion < 0 ||
+
+        posicion >= cobradores.length
+    ) {
+
+        alert(
+            "Seleccione una opción válida."
+        );
+
+        return;
+
+    }
+
+   
+
+    const cobrador =
+        cobradores[posicion];
+
+
+    console.log(
+        "COBRADOR SELECCIONADO:",
+        cobrador
+    );
+
+
+
+    /*
+        ACTUALIZAR CLIENTE
+    */
+
+    const datosAnteriores = {
+        ...cliente
+    };
+
+
+    cliente.usuarioAsignadoId =
+        cobrador.usuario_id;
+
+
+    cliente.estadoAsignacion =
+        "ASIGNADO";
+
+
+    try {
+
+        console.log(
+            "DATOS ANTES DE ACTUALIZAR CLIENTE:",
+            {
+                cobradorId: cobrador.id,
+                usuarioAsignadoId: cobrador.usuario_id,
+                cobradorCompleto: cobrador
+            }
+        );
+
+        console.log(
+            "CLIENTE QUE SE ACTUALIZA:",
+            {
+                idLocal: cliente.id,
+                idSupabase: cliente.supabaseId,
+                nombre: cliente.nombre
+            }
+        );
+
+        const { 
+            data,
+            error 
+        } =
+        await supabaseClient
+            .from("clientes")
+            .update({
+
+                usuario_asignado_id:
+                    cobrador.usuario_id,
+
+                cobrador_id:
+                    cobrador.id,
+
+                estado_asignacion:
+                    "ASIGNADO",
+
+                updated_at:
+                    new Date()
+                    .toISOString()
+
+            })
+            .eq(
+                "id",
+                cliente.supabaseId
+            )
+            .select(`
+                id,
+                nombre,
+                cobrador_id,
+                usuario_asignado_id
+            `);
+
+
+        console.log(
+            "RESPUESTA UPDATE SUPABASE:",
+            data
+        );
+
+        console.log(
+            "ERROR UPDATE:",
+            error
+        );
+            
+            console.log(
+                "VALORES A GUARDAR:",
+                {
+                    cobrador_id:
+                        cobrador.id,
+
+                    usuario_asignado_id:
+                        cobrador.usuario_id
+                }
+            );
+
+
+        if (error) {
+
+            throw error;
+
+        }
+
+
+        DB.guardar();
+
+        await cargarClientes();
+
+        listarClientes();
+
+
+        alert(
+            `Cliente asignado correctamente a ${cobrador.nombre}.`
+        );
+
+
+    } catch (error) {
+
+        /*
+            RESTAURAR DATOS
+            SI FALLA SUPABASE
+        */
+
+        Object.assign(
+            cliente,
+            datosAnteriores
+        );
+
+
+        console.error(
+            "Error asignando cliente:",
+            error
+        );
+
+
+        alert(
+            "No fue posible asignar el cliente."
+        );
+
+    }
+
+}
+/*=========================================================
+    CARGAR COBRADORES DE LA EMPRESA
+=========================================================*/
+
+async function cargarCobradoresEmpresa(){
+
+    const empresaId =
+        obtenerEmpresaIdClientes();
+
+    if(!empresaId){
+
+        console.error(
+            "No se pudo identificar la empresa."
+        );
+
+        return [];
+
+    }
+
+
+    try{
+
+        const {
+            data,
+            error
+        } =
+        await supabaseClient
+            .from("usuarios_empresa")
+            .select(`
+                id,
+                usuario_id,
+                nombre,
+                empresa_id,
+                rol,
+                estado
+            `)
+            .eq(
+                "empresa_id",
+                empresaId
+            )
+            .eq(
+                "rol",
+                "COBRADOR"
+            )
+            .eq(
+                "estado",
+                "ACTIVO"
+            )
+            .order(
+                "nombre",
+                {
+                    ascending: true
+                }
+            );
+
+
+        if(error){
+
+            console.error(
+                "Error cargando cobradores:",
+                error
+            );
+
+            return [];
+
+        }
+
+        console.log(
+            "COBRADORES ENCONTRADOS:",
+            data
+        );
+
+
+        return data || [];
+
+
+    }catch(error){
+
+        console.error(
+            "Error inesperado cargando cobradores:",
+            error
+        );
+
+        return [];
+
+    }
+
+}
+/*=========================================================
     MODAL CLIENTE
 =========================================================*/
 
 let modalCliente;
 
-function abrirModalCliente(){
+async function abrirModalCliente(){
 
     if(!modalCliente){
 
@@ -1269,11 +1991,93 @@ function abrirModalCliente(){
 
     }
 
-    modalCliente.show();
+
+    const usuario =
+        obtenerUsuarioActual();
+
+
+    const contenedor =
+        document.getElementById(
+            "contenedorAsignacionCobrador"
+        );
+
+
+    /*
+        SOLO EL ADMIN PUEDE
+        ASIGNAR CLIENTES
+    */
+
+    if(
+    
+        usuario &&
+        String(usuario.rol).toUpperCase()
+        === "ADMINISTRADOR"
+    )
+    {
+
+        if(contenedor){
+
+            contenedor.style.display = "block";
+
+        }
+
+
+        const select =
+            document.getElementById(
+                "clienteCobrador"
+            );
+
+
+        if(select){
+
+            select.innerHTML =
+                `<option value="">
+                    Sin asignar
+                </option>`;
+
+
+            const cobradores =
+                await cargarCobradoresEmpresa();
+
+
+            cobradores.forEach(cobrador => {
+
+                select.innerHTML += `
+
+                    <option
+                        value="${cobrador.id}">
+
+                        ${cobrador.nombre}
+
+                    </option>
+
+                `;
+
+            });
+
+        }
+
+    }else{
+
+        /*
+            EL COBRADOR NO PUEDE
+            ASIGNAR CLIENTES
+        */
+
+        if(contenedor){
+
+            contenedor.style.display = "none";
+
+        }
+
+    }
+
+         modalCliente.show();
 
 }
+    
 
-function cerrarModalCliente(){
+    function cerrarModalCliente(){
 
     if(modalCliente){
 
@@ -1284,6 +2088,10 @@ function cerrarModalCliente(){
     limpiarFormularioCliente();
 
 }
+
+   
+
+
 
 /*=========================================================
     LIMPIAR FORMULARIO
