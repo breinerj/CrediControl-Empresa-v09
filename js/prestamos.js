@@ -446,14 +446,146 @@ function listarPrestamos(){
 
     if(!tabla) return;
 
-    tabla.innerHTML="";
+    tabla.innerHTML = "";
 
-    DB.prestamos
-        .filter(prestamo =>
-            !prestamo.archivado &&
-            prestamo.estado === "ACTIVO"
-        )
-    .forEach(prestamo=>{
+
+/*
+    IDENTIFICAR USUARIO ACTUAL
+*/
+
+const usuario =
+    obtenerUsuarioActual();
+
+console.log(
+    "USUARIO DESDE LISTAR PRESTAMOS:",
+    usuario
+);
+
+if(!usuario){
+
+    console.warn(
+        "Usuario aún no disponible. Reintentando cargar préstamos..."
+    );
+
+    setTimeout(
+        () => {
+            listarPrestamos();
+        },
+        500
+    );
+
+    return;
+
+}
+
+
+/*
+    FILTRAR PRÉSTAMOS
+    SEGÚN EL ROL DEL USUARIO
+*/
+
+let prestamosFiltrados = [];
+
+
+/*
+    ADMINISTRADOR
+
+    Ve los préstamos que ya están
+    cargados para su empresa.
+*/
+
+if(
+    usuario.rol === "ADMINISTRADOR"
+){
+
+    prestamosFiltrados =
+        DB.prestamos.filter(
+
+            prestamo =>
+
+                !prestamo.archivado &&
+
+                prestamo.estado === "ACTIVO"
+
+        );
+
+}
+
+
+/*
+    COBRADOR
+
+    Solo ve préstamos de los clientes
+    asignados directamente a él.
+*/
+
+else if(
+    usuario.rol === "COBRADOR"
+){
+
+    prestamosFiltrados =
+        DB.prestamos.filter(
+
+            prestamo => {
+
+                if(
+                    prestamo.archivado ||
+                    prestamo.estado !== "ACTIVO"
+                ){
+
+                    return false;
+
+                }
+
+
+                /*
+                    BUSCAR CLIENTE DEL PRÉSTAMO
+                */
+
+                const cliente =
+                    DB.clientes.find(
+
+                        c =>
+                            Number(c.id) ===
+                            Number(prestamo.clienteId)
+
+                    );
+
+
+                if(!cliente){
+
+                    return false;
+
+                }
+
+
+                /*
+                    MISMA REGLA UTILIZADA
+                    EN LISTAR CLIENTES
+                */
+
+                return String(
+                    cliente.usuarioAsignadoId
+                ) === String(
+                    usuario.id
+                )
+
+                &&
+
+                cliente.estado === "ACTIVO";
+
+            }
+
+        );
+
+}
+
+
+/*
+    MOSTRAR PRÉSTAMOS FILTRADOS
+*/
+
+prestamosFiltrados.forEach(prestamo=>{
 
         let cliente = DB.clientes.find(
 

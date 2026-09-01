@@ -2892,19 +2892,88 @@ async function activarEmpresa(){
 
     }
 
-        if(
-            !Array.isArray(DB.usuarios) ||
-            DB.usuarios.length === 0
-        ){
+       /*=========================================================
+    VERIFICAR ADMINISTRADOR DE LA EMPRESA
+=========================================================*/
+
+try{
+
+    const empresaId =
+        Number(
+            DB.config.licencia.empresaId
+        );
 
 
-            mostrarCrearAdministrador();
+    const {
+        data: administradorEmpresa,
+        error: errorAdministrador
+    } =
+    await supabaseClient
+        .from("usuarios_empresa")
+        .select(`
+            id,
+            usuario_id,
+            nombre,
+            correo,
+            rol,
+            estado
+        `)
+        .eq(
+            "empresa_id",
+            empresaId
+        )
+        .eq(
+            "rol",
+            "ADMINISTRADOR"
+        )
+        .eq(
+            "estado",
+            "ACTIVO"
+        )
+        .limit(1);
 
-        }else{
 
-            mostrarLogin();
+    if(errorAdministrador){
 
-        }
+        console.error(
+            "Error verificando administrador de la empresa:",
+            errorAdministrador
+        );
+
+        return false;
+
+    }
+
+
+    if(
+        Array.isArray(administradorEmpresa) &&
+        administradorEmpresa.length > 0
+    ){
+
+        console.log(
+            "Administrador activo encontrado. Mostrando Login."
+        );
+
+        mostrarLogin();
+
+    }else{
+
+        console.log(
+            "La empresa no tiene administrador activo. Mostrando creación de administrador."
+        );
+
+        mostrarCrearAdministrador();
+
+    }
+
+}catch(error){
+
+    console.error(
+        "Error verificando administrador:",
+        error
+    );
+
+}
 }
 
 /*=========================================================

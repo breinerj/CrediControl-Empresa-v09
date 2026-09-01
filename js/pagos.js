@@ -1496,7 +1496,140 @@ function listarPagos(){
 
     tabla.innerHTML = "";
 
-    DB.pagos.forEach(pago=>{
+
+/*
+    IDENTIFICAR USUARIO ACTUAL
+*/
+
+const usuario =
+    obtenerUsuarioActual();
+
+console.log(
+    "USUARIO DESDE LISTAR PAGOS:",
+    usuario
+);
+
+if(!usuario){
+
+    console.warn(
+        "Usuario aún no disponible. Reintentando..."
+    );
+
+    setTimeout(
+        () => {
+            listarPagos();
+        },
+        500
+    );
+
+    return;
+
+}
+
+
+/*
+    FILTRAR PAGOS
+    SEGÚN EL ROL
+*/
+
+let pagosFiltrados = [];
+
+
+/*
+    ADMINISTRADOR
+
+    Ve todos los pagos de su empresa.
+*/
+
+if(
+    usuario.rol === "ADMINISTRADOR"
+){
+
+    pagosFiltrados =
+        DB.pagos;
+
+}
+
+
+/*
+    COBRADOR
+
+    Solo ve pagos de clientes
+    asignados directamente a él.
+*/
+
+else if(
+    usuario.rol === "COBRADOR"
+){
+
+    pagosFiltrados =
+        DB.pagos.filter(
+
+            pago => {
+
+                /*
+                    OBTENER PRÉSTAMO
+                */
+
+                const prestamo =
+                    obtenerPrestamo(
+
+                        pago.prestamo ||
+                        pago.prestamoId
+
+                    );
+
+
+                if(!prestamo){
+
+                    return false;
+
+                }
+
+
+                /*
+                    OBTENER CLIENTE
+                */
+
+                const cliente =
+                    obtenerCliente(
+                        prestamo.clienteId
+                    );
+
+
+                if(!cliente){
+
+                    return false;
+
+                }
+
+
+                /*
+                    MISMA REGLA DE CLIENTES
+                */
+
+                return String(
+                    cliente.usuarioAsignadoId
+                ) === String(
+                    usuario.id
+                )
+
+                &&
+
+                cliente.estado === "ACTIVO";
+
+            }
+
+        );
+
+}
+
+
+/*
+    MOSTRAR PAGOS FILTRADOS
+*/
+
+pagosFiltrados.forEach(pago=>{
 
         const prestamo = obtenerPrestamo(
 

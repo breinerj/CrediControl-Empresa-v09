@@ -34,7 +34,8 @@ async function obtenerResumenDashboardSupabase(){
                 saldo_total,
                 capital_recuperado,
                 interes_recuperado,
-                estado
+                estado,
+                cliente_local_id
             `)
             .eq(
                 "empresa_id",
@@ -315,6 +316,60 @@ async function actualizarDashboard(){
     const cobros =
         await obtenerCobrosSupabase();    
 
+        let cobrosFiltrados = [];
+
+const usuario =
+    obtenerUsuarioActual();
+
+if(
+    usuario?.rol === "ADMINISTRADOR"
+){
+
+    cobrosFiltrados = cobros;
+
+}
+
+else if(
+    usuario?.rol === "COBRADOR"
+){
+
+    cobrosFiltrados =
+        cobros.filter(cuota => {
+
+            const prestamo =
+                cuota.prestamo;
+
+            if(!prestamo){
+                return false;
+            }
+
+            const cliente =
+                DB.clientes.find(
+                    c =>
+                        Number(c.id) ===
+                        Number(
+                            prestamo.cliente_local_id
+                        )
+                );
+
+            if(!cliente){
+                return false;
+            }
+
+            return String(
+                cliente.usuarioAsignadoId
+            ) === String(
+                usuario.id
+            )
+
+            &&
+
+            cliente.estado === "ACTIVO";
+
+        });
+
+}
+
     if(!resumen){
 
         console.warn(
@@ -353,7 +408,7 @@ async function actualizarDashboard(){
     if(cobrosHoy){
 
         const cantidadHoy =
-            cobros.filter(
+            cobrosFiltrados.filter(
                 cuota =>
                     cuota.fecha === hoy()
             ).length;
@@ -386,7 +441,7 @@ async function actualizarDashboard(){
         if(lblTotalHoy){
 
         const totalHoy =
-            cobros
+            cobrosFiltrados
                 .filter(
                     cuota =>
                         cuota.fecha === hoy()
@@ -486,25 +541,128 @@ function cargarTablaCobrosHoy(cobros){
         document.getElementById("tablaCobrosHoy");
 
     if(!tabla) return;
+tabla.innerHTML = "";
 
-    tabla.innerHTML = "";
+const fechaActual =
+    hoy();
 
-    const fechaActual = hoy();
 
-    /*
-        ORDENAR:
-        PRIMERO LOS MÁS VENCIDOS
-        DESPUÉS LOS DE HOY
-    */
+/*
+    IDENTIFICAR USUARIO ACTUAL
+*/
 
-    const cobrosOrdenados =
-        [...cobros].sort((a,b)=>{
+const usuario =
+    obtenerUsuarioActual();
 
-            return new Date(a.fecha) -
-                   new Date(b.fecha);
+console.log(
+    "USUARIO DESDE TABLA COBROS:",
+    usuario
+);
 
-        });
+if(!usuario){
 
+    console.warn(
+        "Usuario aún no disponible."
+    );
+
+    return;
+
+}
+
+
+/*
+    FILTRAR COBROS SEGÚN EL ROL
+*/
+
+let cobrosFiltrados = [];
+
+
+/*
+    ADMINISTRADOR
+    Ve todos los cobros de su empresa
+*/
+
+if(
+    usuario.rol === "ADMINISTRADOR"
+){
+
+    cobrosFiltrados =
+        cobros;
+
+}
+
+
+/*
+    COBRADOR
+    Solo ve cobros de sus clientes asignados
+*/
+
+else if(
+    usuario.rol === "COBRADOR"
+){
+
+    cobrosFiltrados =
+        cobros.filter(
+
+            cuota => {
+
+                const prestamo =
+                    cuota.prestamo;
+
+                if(!prestamo){
+
+                    return false;
+
+                }
+
+
+                const cliente =
+                    DB.clientes.find(
+
+                        c =>
+                            Number(c.id) ===
+                            Number(
+                                prestamo.cliente_local_id
+                            )
+
+                    );
+
+
+                if(!cliente){
+
+                    return false;
+
+                }
+
+
+                return String(
+                    cliente.usuarioAsignadoId
+                ) === String(
+                    usuario.id
+                )
+
+                &&
+
+                cliente.estado === "ACTIVO";
+
+            }
+
+        );
+
+}
+
+
+/*
+    ORDENAR
+*/
+
+const cobrosOrdenados =
+    [...cobrosFiltrados].sort((a,b)=>{
+
+        return new Date(a.fecha) -
+               new Date(b.fecha);
+
+    });
 
     cobrosOrdenados.forEach(cuota=>{
 

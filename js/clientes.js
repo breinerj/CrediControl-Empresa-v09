@@ -78,23 +78,6 @@ async function cargarClientesSupabase(){
                 );
 
 
-        /*
-            SI ES COBRADOR
-            SOLO VE SUS CLIENTES ASIGNADOS
-        */
-
-        if(
-            String(usuario.rol).toUpperCase()
-            === "COBRADOR"
-        ){
-
-            consulta =
-                consulta.eq(
-                    "usuario_asignado_id",
-                    usuario.id
-                );
-
-        }
 
 
         const {
