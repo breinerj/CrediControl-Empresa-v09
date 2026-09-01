@@ -2058,45 +2058,6 @@ function obtenerCuposCobradores(){
 
 
 /*=========================================================
-    CONTAR COBRADORES ACTIVOS
-=========================================================*/
-
-function contarCobradoresActivos(){
-
-    return DB.usuarios.filter(
-
-        usuario =>
-
-            usuario.rol === "COBRADOR" &&
-
-            usuario.estado === "ACTIVO"
-
-    ).length;
-
-}
-
-
-/*=========================================================
-    CUPOS DISPONIBLES
-=========================================================*/
-
-function obtenerCuposDisponibles(){
-
-    return Math.max(
-
-        0,
-
-        obtenerCuposCobradores() -
-
-        contarCobradoresActivos()
-
-    );
-
-}
-
-
-
-/*=========================================================
     IDENTIFICAR EMPRESA DEL USUARIO AUTENTICADO
 =========================================================*/
 
@@ -3019,47 +2980,25 @@ try{
     ACTUALIZAR PANEL DE LICENCIAS
 =========================================================*/
 
-function actualizarPanelLicencias(){
+async function actualizarPanelLicencias(){
+    const autorizados = document.getElementById("cuposAutorizados");
+    const activos = document.getElementById("cobradoresActivos");
+    const disponibles = document.getElementById("cuposDisponibles");
 
-    const autorizados =
-        document.getElementById(
-            "cuposAutorizados"
-        );
+    const cobradoresActivos = await contarCobradoresActivos();
+    const cuposDisponibles = await obtenerCuposDisponibles();
 
-    const activos =
-        document.getElementById(
-            "cobradoresActivos"
-        );
-
-    const disponibles =
-        document.getElementById(
-            "cuposDisponibles"
-        );
-
-
-    if(autorizados){
-
-        autorizados.textContent =
-            obtenerCuposCobradores();
-
+    if(autorizados) {
+        autorizados.textContent = obtenerCuposCobradores();
     }
 
-
-    if(activos){
-
-        activos.textContent =
-            contarCobradoresActivos();
-
+    if(activos) {
+        activos.textContent = cobradoresActivos;
     }
 
-
-    if(disponibles){
-
-        disponibles.textContent =
-            obtenerCuposDisponibles();
-
+    if(disponibles) {
+        disponibles.textContent = cuposDisponibles;
     }
-
 }
 
 /*=========================================================
