@@ -978,38 +978,81 @@ function obtenerCuposCobradores(){
 
 
 /* CONTAR COBRADORES ACTIVOS */
+async function contarCobradoresActivos(){
 
-function contarCobradoresActivos(){
+    const empresaId =
+        obtenerEmpresaIdClientes();
 
-    if(!Array.isArray(DB.usuarios)){
+    if(!empresaId){
 
         return 0;
 
     }
 
-    return DB.usuarios.filter(
+    try{
 
-        usuario =>
+        const {
+            data,
+            error
+        } =
+        await supabaseClient
+            .from("usuarios_empresa")
+            .select("id")
+            .eq(
+                "empresa_id",
+                empresaId
+            )
+            .eq(
+                "rol",
+                "COBRADOR"
+            )
+            .eq(
+                "estado",
+                "ACTIVO"
+            );
 
-            usuario.rol === "COBRADOR" &&
+        if(error){
 
-            usuario.estado === "ACTIVO"
+            console.error(
+                "Error contando cobradores activos:",
+                error
+            );
 
-    ).length;
+            return 0;
+
+        }
+
+        return data?.length || 0;
+
+    }catch(error){
+
+        console.error(
+            "Error inesperado contando cobradores:",
+            error
+        );
+
+        return 0;
+
+    }
 
 }
 
 
 /* OBTENER CUPOS DISPONIBLES */
 
-function obtenerCuposDisponibles(){
+
+async function obtenerCuposDisponibles(){
+
+    const cobradoresActivos =
+        await contarCobradoresActivos();
+
 
     return Math.max(
 
         0,
 
         obtenerCuposCobradores() -
-        contarCobradoresActivos()
+        cobradoresActivos
 
     );
 
@@ -1018,9 +1061,12 @@ function obtenerCuposDisponibles(){
 
 /* VALIDAR SI HAY CUPO */
 
-function hayCupoParaCobrador(){
+async function hayCupoParaCobrador(){
 
-    return obtenerCuposDisponibles() > 0;
+    const cuposDisponibles =
+        await obtenerCuposDisponibles();
+
+    return cuposDisponibles > 0;
 
 }
 /*=========================================================
@@ -1071,7 +1117,7 @@ async function guardarUsuario(){
 
 if(
     rol === "COBRADOR" &&
-    !hayCupoParaCobrador()
+    !(await hayCupoParaCobrador())
 ){
 
     alert(
@@ -1082,7 +1128,7 @@ if(
         obtenerCuposCobradores() +
 
         "\nCobradores activos: " +
-        contarCobradoresActivos() +
+        await contarCobradoresActivos() +
 
         "\n\nSolicite la habilitación de un nuevo cupo."
 
@@ -2048,16 +2094,6 @@ function obtenerCuposDisponibles(){
 
 }
 
-
-/*=========================================================
-    VALIDAR CUPO
-=========================================================*/
-
-function hayCupoParaCobrador(){
-
-    return obtenerCuposDisponibles() > 0;
-
-}
 
 
 /*=========================================================
