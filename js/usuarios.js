@@ -404,25 +404,169 @@ async function iniciarSesion(){
     }
 
 
-    /* BUSCAR USUARIO */
+    /* BUSCAR USUARIO LOCAL */
 
-    const usuario =
-        buscarUsuarioPorLogin(login);
+let usuario =
+    buscarUsuarioPorLogin(login);
 
 
-    if(!usuario){
+/*=====================================================
+    RECUPERAR ADMINISTRADOR DESDE SUPABASE
+    SI SE PERDIERON LOS DATOS LOCALES
+=====================================================*/
 
-        mensaje.innerHTML =
-            "Usuario o contraseña incorrectos.";
+if(!usuario){
 
-        mensaje.classList.remove(
-            "d-none"
+    try{
+
+        const {
+            data: { session },
+            error: errorSesion
+        } =
+        await supabaseClient.auth.getSession();
+
+
+        if(
+            !errorSesion &&
+            session &&
+            session.user
+        ){
+
+            console.log(
+                "Sesión central encontrada. Recuperando administrador local..."
+            );
+
+
+            const {
+                data: administradorCentral,
+                error: errorAdministrador
+            } =
+            await supabaseClient
+                .from("usuarios_empresa")
+                .select(`
+                    id,
+                    usuario_id,
+                    nombre,
+                    correo,
+                    rol,
+                    estado,
+                    empresa_id,
+                    auth_user_id
+                `)
+                .eq(
+                    "auth_user_id",
+                    session.user.id
+                )
+                .in(
+                    "rol",
+                    [
+                        "ADMIN",
+                        "ADMINISTRADOR"
+                    ]
+                )
+                .eq(
+                    "estado",
+                    "ACTIVO"
+                )
+                .limit(1);
+
+
+            if(
+                !errorAdministrador &&
+                Array.isArray(administradorCentral) &&
+                administradorCentral.length > 0
+            ){
+
+                const adminCentral =
+                    administradorCentral[0];
+
+
+                /* CREAR REPRESENTACION LOCAL */
+
+                usuario = {
+
+                    id:
+                        adminCentral.usuario_id ||
+                        adminCentral.id,
+
+                    nombre:
+                        adminCentral.nombre ||
+                        session.user.email,
+
+                    usuario:
+                        login,
+
+                    rol:
+                        "ADMINISTRADOR",
+
+                    estado:
+                        "ACTIVO",
+
+                    correo:
+                        adminCentral.correo ||
+                        session.user.email,
+
+                    auth_user_id:
+                        session.user.id,
+
+                    fechaCreacion:
+                        new Date().toISOString(),
+
+                    ultimoAcceso:
+                        new Date().toISOString()
+
+                };
+
+
+                /* GUARDAR ADMINISTRADOR LOCAL */
+
+                if(!Array.isArray(DB.usuarios)){
+                    DB.usuarios = [];
+                }
+
+
+                DB.usuarios.push(
+                    usuario
+                );
+
+
+                DB.guardar();
+
+
+                console.log(
+                    "Administrador recuperado correctamente:",
+                    usuario
+                );
+
+            }
+
+        }
+
+    }catch(error){
+
+        console.error(
+            "Error recuperando administrador desde Supabase:",
+            error
         );
-
-        return;
 
     }
 
+}
+
+
+/* VALIDAR QUE EXISTE USUARIO */
+
+if(!usuario){
+
+    mensaje.innerHTML =
+        "Usuario o contraseña incorrectos.";
+
+    mensaje.classList.remove(
+        "d-none"
+    );
+
+    return;
+}
 
     /* VALIDAR ESTADO */
 
