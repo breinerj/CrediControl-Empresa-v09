@@ -1621,7 +1621,7 @@ function cambiarEstadoUsuario(id){
         PROTEGER ADMINISTRADOR PRINCIPAL
     */
 
-    if(usuario.usuario === "admin"){
+    if(usuario.usuario === "ADMIN"){
 
         alert(
             "El administrador principal no puede ser desactivado."
@@ -1730,7 +1730,7 @@ function aplicarPermisosUsuario(){
         ADMINISTRADOR
     =============================================*/
 
-    if(usuario.rol === "ADMINISTRADOR"){
+    if(usuario.rol === "ADMIN"){
 
         if(menuReportes){
 
@@ -2722,7 +2722,7 @@ const administrador = {
         seguridad.iteraciones,
 
     rol:
-        "ADMINISTRADOR",
+        "ADMIN",
 
     estado:
         "ACTIVO",
@@ -2958,9 +2958,12 @@ try{
             "empresa_id",
             empresaId
         )
-        .eq(
+        .in(
             "rol",
-            "ADMINISTRADOR"
+            [
+                "ADMIN",
+                "ADMINISTRADOR"
+            ]
         )
         .eq(
             "estado",
