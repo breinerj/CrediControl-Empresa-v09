@@ -396,265 +396,300 @@ async function iniciarSesion(){
     /*=====================================================
         1. BUSCAR USUARIO LOCAL
     =====================================================*/
-
-    let usuario =
-        buscarUsuarioPorLogin(login);
-
-
-    /*=====================================================
-        2. SI NO EXISTE LOCALMENTE,
-           BUSCAR ADMINISTRADOR EN SUPABASE
-    =====================================================*/
-
-    if(!usuario){
-
-        try{
-
-            /*
-                Buscar administradores activos de la empresa.
-
-                Primero intentamos utilizar la empresa guardada
-                localmente.
-            */
-
-            let empresaId =
-                Number(
-                    DB.config?.licencia?.empresaId
-                );
+let usuario =
+    buscarUsuarioPorLogin(login);
 
 
-            let consulta =
-                supabaseClient
-                    .from("usuarios_empresa")
-                    .select(`
-                        id,
-                        usuario_id,
-                        nombre,
-                        correo,
-                        rol,
-                        estado,
-                        empresa_id,
-                        auth_user_id
-                    `)
-                    .in(
-                        "rol",
-                        [
-                            "ADMIN",
-                            "ADMINISTRADOR"
-                        ]
-                    )
-                    .eq(
-                        "estado",
-                        "ACTIVO"
-                    )
-                    .limit(1);
+/*=====================================================
+    2. SI NO EXISTE LOCALMENTE,
+       BUSCAR USUARIO EN SUPABASE
+=====================================================*/
 
+if(!usuario){
+
+    try{
+
+        const empresaId =
+            Number(
+                DB.config?.licencia?.empresaId
+            );
+
+
+        if(!empresaId){
+
+            console.error(
+                "No se pudo determinar la empresa."
+            );
+
+        }else{
 
             /*
-                Si conocemos la empresa,
-                filtramos por ella.
+                Buscar el usuario por LOGIN/NOMBRE
+                dentro de la empresa.
             */
-
-            if(empresaId){
-
-                consulta =
-                    consulta.eq(
-                        "empresa_id",
-                        empresaId
-                    );
-            }
-
 
             const {
-                data: administradores,
-                error: errorAdministrador
+                data: usuariosCentral,
+                error: errorUsuario
             } =
-            await consulta;
+            await supabaseClient
+                .from("usuarios_empresa")
+                .select(`
+                    id,
+                    usuario_id,
+                    nombre,
+                    correo,
+                    rol,
+                    estado,
+                    empresa_id,
+                    auth_user_id
+                `)
+                .eq(
+                    "empresa_id",
+                    empresaId
+                )
+                .eq(
+                    "estado",
+                    "ACTIVO"
+                );
 
 
-            if(errorAdministrador){
+            if(errorUsuario){
 
                 console.error(
-                    "Error buscando administrador en Supabase:",
-                    errorAdministrador
+                    "Error buscando usuario en Supabase:",
+                    errorUsuario
                 );
 
-            }
+            }else{
+
+                /*
+                    Buscar coincidencia por nombre,
+                    usuario o correo.
+                */
+
+                const usuarioCentral =
+                    usuariosCentral.find(
+                        u =>
+                            String(u.nombre || "")
+                                .trim()
+                                .toLowerCase() ===
+                            login.toLowerCase()
+
+                            ||
+
+                            String(u.correo || "")
+                                .trim()
+                                .toLowerCase() ===
+                            login.toLowerCase()
+                    );
 
 
-            /*=================================================
-                ADMINISTRADOR ENCONTRADO
-            =================================================*/
+                if(usuarioCentral){
 
-            if(
-                !errorAdministrador &&
-                Array.isArray(administradores) &&
-                administradores.length > 0
-            ){
-
-                const adminCentral =
-                    administradores[0];
-
-
-                console.log(
-                    "Administrador central encontrado:",
-                    adminCentral
-                );
-
-
-                /*=================================================
-                    AUTENTICAR CONTRA SUPABASE AUTH
-
-                    IMPORTANTE:
-                    Se utiliza el correo central y la contraseña
-                    que el usuario acaba de introducir.
-                =================================================*/
-
-                if(adminCentral.correo){
-
-                    const {
-                        data: authData,
-                        error: authError
-                    } =
-                    await supabaseClient.auth
-                        .signInWithPassword({
-
-                            email:
-                                adminCentral.correo,
-
-                            password:
-                                password
-                        });
+                    console.log(
+                        "Usuario encontrado en Supabase:",
+                        usuarioCentral
+                    );
 
 
                     /*=================================================
-                        CREDENCIALES CORRECTAS
+                        AUTENTICAR CONTRA SUPABASE AUTH
                     =================================================*/
 
-                    if(
-                        !authError &&
-                        authData?.user
-                    ){
+                    if(usuarioCentral.correo){
 
-                        usuario = {
+                        const {
+                            data: authData,
+                            error: authError
+                        } =
+                        await supabaseClient.auth
+                            .signInWithPassword({
 
-                            id:
-                                adminCentral.usuario_id ||
-                                adminCentral.id,
+                                email:
+                                    usuarioCentral.correo,
 
-                            nombre:
-                                adminCentral.nombre ||
-                                authData.user.email,
+                                password:
+                                    password
 
-                            usuario:
-                                login,
+                            });
 
-                            correo:
-                                adminCentral.correo,
 
-                            rol:
-                                "ADMINISTRADOR",
-
-                            estado:
-                                "ACTIVO",
-
-                            empresa_id:
-                                adminCentral.empresa_id,
-
-                            auth_user_id:
-                                authData.user.id,
-
-                            fechaCreacion:
-                                new Date().toISOString(),
-
-                            ultimoAcceso:
-                                null,
+                        if(
+                            !authError &&
+                            authData?.user
+                        ){
 
                             /*
-                                Indica que esta sesión fue
-                                autenticada directamente por
-                                Supabase Auth.
+                                Crear usuario local
                             */
 
-                            autenticadoSupabase:
-                                true
-                        };
+                            usuario = {
+
+                                id:
+                                    usuarioCentral.usuario_id ||
+                                    usuarioCentral.id,
+
+                                nombre:
+                                    usuarioCentral.nombre,
+
+                                usuario:
+                                    login,
+
+                                correo:
+                                    usuarioCentral.correo,
+
+                                rol:
+                                    usuarioCentral.rol === "ADMIN"
+                                        ? "ADMINISTRADOR"
+                                        : usuarioCentral.rol,
+
+                                estado:
+                                    usuarioCentral.estado,
+
+                                empresa_id:
+                                    usuarioCentral.empresa_id,
+
+                                auth_user_id:
+                                    authData.user.id,
+
+                                fechaCreacion:
+                                    new Date().toISOString(),
+
+                                ultimoAcceso:
+                                    null,
+
+                                autenticadoSupabase:
+                                    true
+
+                            };
 
 
-                        /*=================================================
-                            GUARDAR ADMINISTRADOR LOCALMENTE
+                            /*
+                                Guardar usuario recuperado
+                                en la base local
+                            */
 
-                            Esto evita tener que recuperar nuevamente
-                            el administrador en el próximo acceso.
-                        =================================================*/
+                            if(
+                                !Array.isArray(DB.usuarios)
+                            ){
 
-                        if(
-                            !Array.isArray(DB.usuarios)
-                        ){
-
-                            DB.usuarios = [];
-                        }
+                                DB.usuarios = [];
+                            }
 
 
-                        const indiceAdministrador =
-                            DB.usuarios.findIndex(
-                                u =>
-                                    u.rol ===
-                                    "ADMINISTRADOR"
+                            const indiceUsuario =
+                                DB.usuarios.findIndex(
+                                    u =>
+                                        String(
+                                            u.usuario || ""
+                                        ).toLowerCase() ===
+                                        login.toLowerCase()
+                                );
+
+
+                            if(
+                                indiceUsuario >= 0
+                            ){
+
+                                DB.usuarios[
+                                    indiceUsuario
+                                ] = usuario;
+
+                            }else{
+
+                                DB.usuarios.push(
+                                    usuario
+                                );
+                            }
+
+
+                            /*
+                                Guardar relación empresa local
+                            */
+
+                            if(
+                                !Array.isArray(
+                                    DB.usuariosEmpresa
+                                )
+                            ){
+
+                                DB.usuariosEmpresa = [];
+                            }
+
+
+                            const indiceEmpresa =
+                                DB.usuariosEmpresa.findIndex(
+                                    u =>
+                                        String(
+                                            u.auth_user_id || ""
+                                        ) ===
+                                        String(
+                                            usuarioCentral.auth_user_id || ""
+                                        )
+                                );
+
+
+                            if(
+                                indiceEmpresa < 0
+                            ){
+
+                                DB.usuariosEmpresa.push(
+                                    usuarioCentral
+                                );
+
+                            }
+
+
+                            DB.guardar();
+
+
+                            console.log(
+                                "USUARIO AUTENTICADO DESDE SUPABASE:",
+                                usuario
                             );
 
-
-                        if(
-                            indiceAdministrador >= 0
-                        ){
-
-                            DB.usuarios[
-                                indiceAdministrador
-                            ] = usuario;
 
                         }else{
 
-                            DB.usuarios.push(
-                                usuario
+                            console.error(
+                                "Supabase rechazó las credenciales:",
+                                authError
                             );
+
                         }
-
-
-                        DB.guardar();
-
-
-                        console.log(
-                            "ADMINISTRADOR RECUPERADO Y AUTENTICADO:",
-                            usuario
-                        );
-
 
                     }else{
 
                         console.error(
-                            "Supabase rechazó las credenciales:",
-                            authError
+                            "El usuario no tiene correo registrado en Supabase."
                         );
+
                     }
 
                 }else{
 
-                    console.error(
-                        "El administrador no tiene correo registrado."
+                    console.log(
+                        "No se encontró el usuario en usuarios_empresa:",
+                        login
                     );
+
                 }
+
             }
 
-        }catch(error){
-
-            console.error(
-                "Error recuperando administrador:",
-                error
-            );
         }
+
+    }catch(error){
+
+        console.error(
+            "Error recuperando usuario desde Supabase:",
+            error
+        );
+
     }
 
-
+}
     /*=====================================================
         3. VALIDAR QUE EXISTE USUARIO
     =====================================================*/
@@ -1476,7 +1511,6 @@ try{
 
 }
 
-
 /*=========================================================
     CREAR USUARIO
 =========================================================*/
@@ -1518,11 +1552,116 @@ const nuevoUsuario = {
         null
 
 };
-    DB.usuarios.push(
-        nuevoUsuario
+
+
+/*=========================================================
+    CREAR USUARIO EN SUPABASE AUTH
+=========================================================*/
+
+let authUser = null;
+
+
+/*
+    Para Supabase Auth necesitamos un correo válido.
+
+    Si el login ya es un correo lo utilizamos.
+    Si no, generamos uno interno para autenticación.
+*/
+
+let correoAuth =
+    login.includes("@")
+        ? login
+        : `${login}@bkc.local`;
+
+
+try{
+
+    const {
+        data: authData,
+        error: authError
+    } =
+    await supabaseClient.auth.signUp({
+
+        email:
+            correoAuth,
+
+        password:
+            password
+    });
+
+
+    if(authError){
+
+        console.error(
+            "Error creando usuario en Supabase Auth:",
+            authError
+        );
+
+        alert(
+            "No fue posible crear el usuario en Supabase Auth.\n\n" +
+            authError.message
+        );
+
+        return;
+    }
+
+
+    authUser =
+        authData?.user;
+
+
+    if(!authUser){
+
+        alert(
+            "Supabase no devolvió el usuario de autenticación."
+        );
+
+        return;
+    }
+
+
+    console.log(
+        "Usuario creado correctamente en Supabase Auth:",
+        authUser
     );
 
-   /*=========================================================
+
+}catch(error){
+
+    console.error(
+        "Error inesperado creando usuario Auth:",
+        error
+    );
+
+    alert(
+        "No fue posible crear el usuario de autenticación."
+    );
+
+    return;
+}
+
+
+/*=========================================================
+    ASIGNAR DATOS DE SUPABASE AUTH
+=========================================================*/
+
+nuevoUsuario.auth_user_id =
+    authUser.id;
+
+nuevoUsuario.correo =
+    correoAuth;
+
+
+/*=========================================================
+    GUARDAR USUARIO LOCAL
+=========================================================*/
+
+DB.usuarios.push(
+    nuevoUsuario
+);
+
+
+/*=========================================================
     CREAR RELACION USUARIO - EMPRESA
 =========================================================*/
 
@@ -1549,47 +1688,38 @@ if(
             nuevoUsuario.nombre,
 
         correo:
-            nuevoUsuario.usuario,
+            correoAuth,
 
         rol:
             nuevoUsuario.rol,
 
         estado:
-            "ACTIVO"
+            "ACTIVO",
+
+        auth_user_id:
+            authUser.id
 
     };
 
 
-    /*=========================================================
+    /*=====================================================
         GUARDAR RELACION LOCAL
-    =========================================================*/
+    =====================================================*/
 
     DB.usuariosEmpresa.push(
         usuarioEmpresa
     );
 
 
-    /*=========================================================
-        GUARDAR USUARIO EMPRESA EN SUPABASE
-    =========================================================*/
+    /*=====================================================
+        GUARDAR RELACION EN SUPABASE
+    =====================================================*/
 
     try{
 
         console.log(
             "INTENTANDO CREAR USUARIO EMPRESA:",
-            {
-                usuario_id:
-                    nuevoUsuario.id,
-
-                nombre:
-                    nuevoUsuario.nombre,
-
-                rol:
-                    nuevoUsuario.rol,
-
-                empresaId:
-                    empresaId
-            }
+            usuarioEmpresa
         );
 
 
@@ -1611,13 +1741,16 @@ if(
                     nuevoUsuario.nombre,
 
                 correo:
-                    nuevoUsuario.usuario,
+                    correoAuth,
 
                 rol:
                     nuevoUsuario.rol,
 
                 estado:
-                    "ACTIVO"
+                    "ACTIVO",
+
+                auth_user_id:
+                    authUser.id
 
             })
             .select()
@@ -1631,14 +1764,43 @@ if(
                 error
             );
 
-        }else{
+            /*
+                Si falla la relación empresarial,
+                eliminamos el usuario local para
+                evitar datos inconsistentes.
+            */
 
-            console.log(
-                "Usuario empresa creado correctamente en Supabase:",
-                data
+            DB.usuarios =
+                DB.usuarios.filter(
+                    u =>
+                        u.id !==
+                        nuevoUsuario.id
+                );
+
+            DB.usuariosEmpresa =
+                DB.usuariosEmpresa.filter(
+                    u =>
+                        u.id !==
+                        usuarioEmpresa.id
+                );
+
+            DB.guardar();
+
+
+            alert(
+                "El usuario fue creado en Supabase Auth, " +
+                "pero no fue posible asociarlo a la empresa.\n\n" +
+                error.message
             );
 
+            return;
         }
+
+
+        console.log(
+            "Usuario empresa creado correctamente:",
+            data
+        );
 
 
     }catch(error){
@@ -1648,12 +1810,36 @@ if(
             error
         );
 
+        return;
     }
 
 }
 
-    
 
+/*=========================================================
+    GUARDAR BASE LOCAL
+=========================================================*/
+
+DB.guardar();
+
+
+/* ACTUALIZAR TABLA */
+
+await listarUsuarios();
+
+
+/* CERRAR MODAL */
+
+if(modalUsuario){
+
+    modalUsuario.hide();
+
+}
+
+
+alert(
+    "Usuario creado correctamente."
+);
 
     DB.guardar();
 
