@@ -408,10 +408,9 @@ async function iniciarSesion(){
 
 let usuario =
     buscarUsuarioPorLogin(login);
-
 /*=====================================================
     RECUPERAR ADMINISTRADOR DESDE SUPABASE
-    SI SE PERDIERON LOS DATOS LOCALES
+    SI NO EXISTE USUARIO LOCAL
 =====================================================*/
 
 if(!usuario){
@@ -424,7 +423,15 @@ if(!usuario){
             );
 
 
-        if(empresaId){
+        if(!empresaId){
+
+            console.error(
+                "No se pudo determinar la empresa."
+            );
+
+        }else{
+
+            /* BUSCAR ADMINISTRADOR ACTIVO */
 
             const {
                 data: administradores,
@@ -487,7 +494,7 @@ if(!usuario){
 
 
                 /*=================================================
-                    AUTENTICAR ADMINISTRADOR CONTRA SUPABASE AUTH
+                    AUTENTICAR DIRECTAMENTE CONTRA SUPABASE AUTH
                 =================================================*/
 
                 if(adminCentral.correo){
@@ -512,6 +519,10 @@ if(!usuario){
                         !authError &&
                         authData?.user
                     ){
+
+                        /*=========================================
+                            CREAR USUARIO LOCAL
+                        =========================================*/
 
                         usuario = {
 
@@ -553,6 +564,8 @@ if(!usuario){
                         };
 
 
+                        /* GUARDAR EN DB LOCAL */
+
                         if(
                             !Array.isArray(DB.usuarios)
                         ){
@@ -591,7 +604,7 @@ if(!usuario){
 
 
                         console.log(
-                            "Administrador recuperado correctamente:",
+                            "ADMINISTRADOR AUTENTICADO DESDE SUPABASE:",
                             usuario
                         );
 
@@ -603,6 +616,12 @@ if(!usuario){
                         );
 
                     }
+
+                }else{
+
+                    console.error(
+                        "El administrador no tiene correo registrado."
+                    );
 
                 }
 
@@ -620,8 +639,6 @@ if(!usuario){
     }
 
 }
-
-
 /* VALIDAR QUE EXISTE USUARIO */
 
 if(!usuario){
@@ -668,11 +685,19 @@ if(!usuario){
 
         }else{
 
-            passwordCorrecta =
-                await verificarPassword(
-                    password,
-                    usuario
-                );
+           if(usuario.autenticadoSupabase === true){
+
+                passwordCorrecta = true;
+
+            }else{
+
+                passwordCorrecta =
+                    await verificarPassword(
+                        password,
+                        usuario
+                    );
+
+}
 
         }
 
