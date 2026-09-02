@@ -916,26 +916,66 @@ function listarClientes() {
     */
 
     else if (
-        usuario.rol === "COBRADOR"
-    ) {
+    usuario.rol === "COBRADOR"
+) {
 
-        clientesFiltrados =
-            DB.clientes.filter(
-                cliente =>
+    /*
+        El cobrador debe ver los clientes cuya
+        asignación central en Supabase corresponde
+        a su usuario.
+    */
 
+    const usuarioId =
+        usuario.id;
+
+
+    const authUserId =
+        usuario.auth_user_id;
+
+
+    clientesFiltrados =
+        DB.clientes.filter(
+            cliente => {
+
+                const asignado =
                     String(
-                        cliente.usuarioAsignadoId
+                        cliente.usuarioAsignadoId || ""
+                    );
+
+
+                const coincideUsuario =
+                    asignado ===
+                    String(usuarioId);
+
+
+                /*
+                    También permitimos coincidencia
+                    con auth_user_id cuando la asignación
+                    central esté trabajando con ese
+                    identificador.
+                */
+
+                const coincideAuth =
+                    authUserId &&
+                    String(
+                        asignado
                     ) ===
                     String(
-                        usuario.id
-                    )
+                        authUserId
+                    );
 
-                    &&
 
-                    cliente.estado === "ACTIVO"
-            );
+                return (
+                    coincideUsuario ||
+                    coincideAuth
+                )
+                &&
+                cliente.estado === "ACTIVO";
 
-    }
+            }
+        );
+
+}
 
 
     /*

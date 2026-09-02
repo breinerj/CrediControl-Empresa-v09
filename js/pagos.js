@@ -1557,7 +1557,6 @@ if(
     Solo ve pagos de clientes
     asignados directamente a él.
 */
-
 else if(
     usuario.rol === "COBRADOR"
 ){
@@ -1605,13 +1604,22 @@ else if(
 
 
                 /*
-                    MISMA REGLA DE CLIENTES
+                    COBRADOR ACTUAL
+
+                    Utilizamos el mismo identificador
+                    que se utiliza para asignar clientes.
                 */
 
-                return String(
-                    cliente.usuarioAsignadoId
-                ) === String(
-                    usuario.id
+                return (
+
+                    String(
+                        cliente.usuarioAsignadoId || ""
+                    ) ===
+
+                    String(
+                        usuario.id || ""
+                    )
+
                 )
 
                 &&
@@ -1623,7 +1631,6 @@ else if(
         );
 
 }
-
 
 /*
     MOSTRAR PAGOS FILTRADOS

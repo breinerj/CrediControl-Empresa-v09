@@ -464,7 +464,7 @@ else if(
 
     cargarTablaCobrosHoy(cobros);
 
-    cargarTablaCobros(cobros);
+    cargarTablaCobros(cobrosFiltrados);
 
     actualizarGraficoCapital(resumen);
 
@@ -635,6 +635,13 @@ else if(
                 }
 
 
+                console.log("=== FILTRO COBROS COBRADOR ===");
+                console.log("Cliente:", cliente.nombre);
+                console.log("cliente.usuarioAsignadoId:", cliente.usuarioAsignadoId);
+                console.log("usuario.id:", usuario.id);
+                console.log("usuario.auth_user_id:", usuario.auth_user_id);
+                console.log("usuario.rol:", usuario.rol);
+
                 return String(
                     cliente.usuarioAsignadoId
                 ) === String(
@@ -655,6 +662,32 @@ else if(
 /*
     ORDENAR
 */
+
+
+console.log("=== COBROS QUE PASARON EL FILTRO ===");
+
+cobrosFiltrados.forEach(cuota => {
+
+    const prestamo = cuota.prestamo;
+
+    const cliente = prestamo
+        ? DB.clientes.find(
+            c =>
+                Number(c.id) ===
+                Number(prestamo.cliente_local_id)
+        )
+        : null;
+
+    console.log({
+        cliente: cliente?.nombre,
+        clienteId: cliente?.id,
+        asignadoA: cliente?.usuarioAsignadoId,
+        cobradorActual: usuario.id,
+        prestamo: prestamo?.codigo,
+        cuota: cuota.numero
+    });
+
+});
 
 const cobrosOrdenados =
     [...cobrosFiltrados].sort((a,b)=>{
