@@ -2003,6 +2003,7 @@ async function listarUsuarios(){
 
             const nombreUsuario =
                 usuarioLocal?.usuario ||
+                usuario.correo ||
                 usuario.nombre;
 
 
