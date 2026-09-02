@@ -1864,12 +1864,12 @@ alert(
 
 }
 
-
 /*=========================================================
     LISTAR USUARIOS
+    CARGAR USUARIOS DESDE SUPABASE
 =========================================================*/
 
-function listarUsuarios(){
+async function listarUsuarios(){
 
     const tabla =
         document.getElementById(
@@ -1887,133 +1887,239 @@ function listarUsuarios(){
     tabla.innerHTML = "";
 
 
-    DB.usuarios.forEach(usuario=>{
+    try{
+
+        const empresaId =
+            obtenerEmpresaIdClientes();
 
 
-        let ultimoAcceso =
-            "Nunca";
+        if(!empresaId){
 
+            console.error(
+                "No se pudo determinar la empresa."
+            );
 
-        if(usuario.ultimoAcceso){
-
-            try{
-
-                ultimoAcceso =
-                    new Date(
-                        usuario.ultimoAcceso
-                    ).toLocaleString();
-
-            }catch(error){
-
-                ultimoAcceso =
-                    usuario.ultimoAcceso;
-
-            }
+            return;
 
         }
 
 
-        const estadoColor =
+        /*=====================================================
+            CONSULTAR USUARIOS DE LA EMPRESA
+        =====================================================*/
 
-            usuario.estado === "ACTIVO"
-
-            ? "bg-success"
-
-            : "bg-secondary";
-
-
-        tabla.innerHTML += `
-
-        <tr>
-
-            <td>
-
-                ${usuario.nombre}
-
-            </td>
-
-
-            <td>
-
-                ${usuario.usuario}
-
-            </td>
-
-
-            <td>
-
-                <span class="badge bg-primary">
-
-                    ${usuario.rol}
-
-                </span>
-
-            </td>
+        const {
+            data: usuariosCentral,
+            error
+        } =
+        await supabaseClient
+            .from("usuarios_empresa")
+            .select(`
+                id,
+                usuario_id,
+                nombre,
+                correo,
+                rol,
+                estado,
+                empresa_id,
+                auth_user_id
+            `)
+            .eq(
+                "empresa_id",
+                empresaId
+            )
+            .order(
+                "nombre",
+                {
+                    ascending: true
+                }
+            );
 
 
-            <td>
+        if(error){
 
-                <span class="badge ${estadoColor}">
+            console.error(
+                "Error consultando usuarios:",
+                error
+            );
 
-                    ${usuario.estado}
+            return;
 
-                </span>
-
-            </td>
-
-
-            <td>
-
-                ${ultimoAcceso}
-
-            </td>
+        }
 
 
-            <td>
+        /*=====================================================
+            MOSTRAR USUARIOS
+        =====================================================*/
 
-                ${
-                    usuario.usuario !== "admin"
+        usuariosCentral.forEach(usuario=>{
 
-                    ?
 
-                    `
-                    <button
-                        class="btn btn-sm ${
-                            usuario.estado === "ACTIVO"
-                            ? "btn-warning"
-                            : "btn-success"
-                        }"
-                        onclick="cambiarEstadoUsuario(${usuario.id})">
+            let ultimoAcceso =
+                "Nunca";
 
-                        ${
-                            usuario.estado === "ACTIVO"
-                            ? "Desactivar"
-                            : "Activar"
-                        }
 
-                    </button>
-                    `
+            /*
+                Buscar información local del usuario,
+                si existe.
+            */
 
-                    :
+            const usuarioLocal =
+                DB.usuarios.find(
+                    u =>
+                        String(u.id) ===
+                        String(
+                            usuario.usuario_id
+                        )
+                );
 
-                    `
-                    <span class="text-muted">
 
-                        Usuario principal
+            if(
+                usuarioLocal?.ultimoAcceso
+            ){
 
-                    </span>
-                    `
+                try{
+
+                    ultimoAcceso =
+                        new Date(
+                            usuarioLocal.ultimoAcceso
+                        ).toLocaleString();
+
+                }catch(error){
+
+                    ultimoAcceso =
+                        usuarioLocal.ultimoAcceso;
+
                 }
 
-            </td>
+            }
 
-        </tr>
 
-        `;
+            const estadoColor =
+                usuario.estado === "ACTIVO"
+                    ? "bg-success"
+                    : "bg-secondary";
 
-    });
-    
-    actualizarPanelLicencias();
+
+            const nombreUsuario =
+                usuarioLocal?.usuario ||
+                usuario.nombre;
+
+
+            tabla.innerHTML += `
+
+            <tr>
+
+                <td>
+
+                    ${usuario.nombre || ""}
+
+                </td>
+
+
+                <td>
+
+                    ${nombreUsuario || ""}
+
+                </td>
+
+
+                <td>
+
+                    <span class="badge bg-primary">
+
+                        ${
+                            usuario.rol === "ADMIN"
+                                ? "ADMINISTRADOR"
+                                : usuario.rol
+                        }
+
+                    </span>
+
+                </td>
+
+
+                <td>
+
+                    <span class="badge ${estadoColor}">
+
+                        ${usuario.estado}
+
+                    </span>
+
+                </td>
+
+
+                <td>
+
+                    ${ultimoAcceso}
+
+                </td>
+
+
+                <td>
+
+                    ${
+                        usuario.rol === "ADMIN"
+
+                        ?
+
+                        `
+                        <span class="text-muted">
+
+                            Usuario principal
+
+                        </span>
+                        `
+
+                        :
+
+                        `
+                        <button
+                            class="btn btn-sm ${
+                                usuario.estado === "ACTIVO"
+                                ? "btn-warning"
+                                : "btn-success"
+                            }"
+                            onclick="cambiarEstadoUsuario(${
+                                usuario.id
+                            })">
+
+                            ${
+                                usuario.estado === "ACTIVO"
+                                ? "Desactivar"
+                                : "Activar"
+                            }
+
+                        </button>
+                        `
+                    }
+
+                </td>
+
+            </tr>
+
+            `;
+
+        });
+
+
+        /*=====================================================
+            ACTUALIZAR PANEL DE LICENCIAS
+        =====================================================*/
+
+        await actualizarPanelLicencias();
+
+
+    }catch(error){
+
+        console.error(
+            "Error listando usuarios:",
+            error
+        );
+
+    }
+
 }
 
 
