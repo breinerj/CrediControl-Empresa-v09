@@ -359,7 +359,7 @@ async function verificarPassword(
 
 /*=========================================================
     INICIAR SESION
-    CON VERIFICACION SEGURA DE CONTRASEÑA
+    AUTENTICACION LOCAL + SUPABASE
 =========================================================*/
 
 async function iniciarSesion(){
@@ -370,23 +370,15 @@ async function iniciarSesion(){
             .value
             .trim();
 
-
     const password =
         document
             .getElementById("loginPassword")
             .value;
 
-
     const mensaje =
-        document.getElementById(
-            "mensajeLogin"
-        );
+        document.getElementById("mensajeLogin");
 
-
-    mensaje.classList.add(
-        "d-none"
-    );
-
+    mensaje.classList.add("d-none");
 
     /* VALIDAR CAMPOS */
 
@@ -395,87 +387,104 @@ async function iniciarSesion(){
         mensaje.innerHTML =
             "Ingrese usuario y contraseña.";
 
-        mensaje.classList.remove(
-            "d-none"
-        );
+        mensaje.classList.remove("d-none");
 
         return;
-
     }
 
 
-    /* BUSCAR USUARIO LOCAL */
+    /*=====================================================
+        1. BUSCAR USUARIO LOCAL
+    =====================================================*/
 
-let usuario =
-    buscarUsuarioPorLogin(login);
-/*=====================================================
-    RECUPERAR ADMINISTRADOR DESDE SUPABASE
-    SI NO EXISTE USUARIO LOCAL
-=====================================================*/
-
-if(!usuario){
-
-    try{
-
-        const empresaId =
-            Number(
-                DB.config?.licencia?.empresaId
-            );
+    let usuario =
+        buscarUsuarioPorLogin(login);
 
 
-        if(!empresaId){
+    /*=====================================================
+        2. SI NO EXISTE LOCALMENTE,
+           BUSCAR ADMINISTRADOR EN SUPABASE
+    =====================================================*/
 
-            console.error(
-                "No se pudo determinar la empresa."
-            );
+    if(!usuario){
 
-        }else{
+        try{
 
-            /* BUSCAR ADMINISTRADOR ACTIVO */
+            /*
+                Buscar administradores activos de la empresa.
+
+                Primero intentamos utilizar la empresa guardada
+                localmente.
+            */
+
+            let empresaId =
+                Number(
+                    DB.config?.licencia?.empresaId
+                );
+
+
+            let consulta =
+                supabaseClient
+                    .from("usuarios_empresa")
+                    .select(`
+                        id,
+                        usuario_id,
+                        nombre,
+                        correo,
+                        rol,
+                        estado,
+                        empresa_id,
+                        auth_user_id
+                    `)
+                    .in(
+                        "rol",
+                        [
+                            "ADMIN",
+                            "ADMINISTRADOR"
+                        ]
+                    )
+                    .eq(
+                        "estado",
+                        "ACTIVO"
+                    )
+                    .limit(1);
+
+
+            /*
+                Si conocemos la empresa,
+                filtramos por ella.
+            */
+
+            if(empresaId){
+
+                consulta =
+                    consulta.eq(
+                        "empresa_id",
+                        empresaId
+                    );
+            }
+
 
             const {
                 data: administradores,
                 error: errorAdministrador
             } =
-            await supabaseClient
-                .from("usuarios_empresa")
-                .select(`
-                    id,
-                    usuario_id,
-                    nombre,
-                    correo,
-                    rol,
-                    estado,
-                    empresa_id,
-                    auth_user_id
-                `)
-                .eq(
-                    "empresa_id",
-                    empresaId
-                )
-                .in(
-                    "rol",
-                    [
-                        "ADMIN",
-                        "ADMINISTRADOR"
-                    ]
-                )
-                .eq(
-                    "estado",
-                    "ACTIVO"
-                )
-                .limit(1);
+            await consulta;
 
 
             if(errorAdministrador){
 
                 console.error(
-                    "Error buscando administrador:",
+                    "Error buscando administrador en Supabase:",
                     errorAdministrador
                 );
 
             }
 
+
+            /*=================================================
+                ADMINISTRADOR ENCONTRADO
+            =================================================*/
 
             if(
                 !errorAdministrador &&
@@ -494,7 +503,11 @@ if(!usuario){
 
 
                 /*=================================================
-                    AUTENTICAR DIRECTAMENTE CONTRA SUPABASE AUTH
+                    AUTENTICAR CONTRA SUPABASE AUTH
+
+                    IMPORTANTE:
+                    Se utiliza el correo central y la contraseña
+                    que el usuario acaba de introducir.
                 =================================================*/
 
                 if(adminCentral.correo){
@@ -511,18 +524,17 @@ if(!usuario){
 
                             password:
                                 password
-
                         });
 
+
+                    /*=================================================
+                        CREDENCIALES CORRECTAS
+                    =================================================*/
 
                     if(
                         !authError &&
                         authData?.user
                     ){
-
-                        /*=========================================
-                            CREAR USUARIO LOCAL
-                        =========================================*/
 
                         usuario = {
 
@@ -558,20 +570,29 @@ if(!usuario){
                             ultimoAcceso:
                                 null,
 
+                            /*
+                                Indica que esta sesión fue
+                                autenticada directamente por
+                                Supabase Auth.
+                            */
+
                             autenticadoSupabase:
                                 true
-
                         };
 
 
-                        /* GUARDAR EN DB LOCAL */
+                        /*=================================================
+                            GUARDAR ADMINISTRADOR LOCALMENTE
+
+                            Esto evita tener que recuperar nuevamente
+                            el administrador en el próximo acceso.
+                        =================================================*/
 
                         if(
                             !Array.isArray(DB.usuarios)
                         ){
 
                             DB.usuarios = [];
-
                         }
 
 
@@ -596,7 +617,6 @@ if(!usuario){
                             DB.usuarios.push(
                                 usuario
                             );
-
                         }
 
 
@@ -604,9 +624,10 @@ if(!usuario){
 
 
                         console.log(
-                            "ADMINISTRADOR AUTENTICADO DESDE SUPABASE:",
+                            "ADMINISTRADOR RECUPERADO Y AUTENTICADO:",
                             usuario
                         );
+
 
                     }else{
 
@@ -614,7 +635,6 @@ if(!usuario){
                             "Supabase rechazó las credenciales:",
                             authError
                         );
-
                     }
 
                 }else{
@@ -622,84 +642,85 @@ if(!usuario){
                     console.error(
                         "El administrador no tiene correo registrado."
                     );
-
                 }
-
             }
 
+        }catch(error){
+
+            console.error(
+                "Error recuperando administrador:",
+                error
+            );
         }
-
-    }catch(error){
-
-        console.error(
-            "Error recuperando administrador desde Supabase:",
-            error
-        );
-
     }
 
-}
-/* VALIDAR QUE EXISTE USUARIO */
 
-if(!usuario){
+    /*=====================================================
+        3. VALIDAR QUE EXISTE USUARIO
+    =====================================================*/
 
-    mensaje.innerHTML =
-        "Usuario o contraseña incorrectos.";
+    if(!usuario){
 
-    mensaje.classList.remove(
-        "d-none"
-    );
+        mensaje.innerHTML =
+            "Usuario o contraseña incorrectos.";
 
-    return;
+        mensaje.classList.remove("d-none");
 
-}
+        return;
+    }
 
-    /* VALIDAR ESTADO */
+
+    /*=====================================================
+        4. VALIDAR ESTADO
+    =====================================================*/
 
     if(usuario.estado !== "ACTIVO"){
 
         mensaje.innerHTML =
             "Este usuario se encuentra inactivo.";
 
-        mensaje.classList.remove(
-            "d-none"
-        );
+        mensaje.classList.remove("d-none");
 
         return;
-
     }
 
 
     /*=====================================================
-        VERIFICAR CONTRASEÑA
+        5. VERIFICAR CONTRASEÑA
     =====================================================*/
 
-    let passwordCorrecta = false;
+    let passwordCorrecta =
+        false;
 
 
     try{
 
-        if(usuario.autenticadoSupabase === true){
+        /*
+            Si Supabase ya validó la contraseña,
+            NO debemos volver a verificarla contra
+            el hash local.
 
-            passwordCorrecta = true;
+            Esto es lo que permite recuperar al
+            administrador después de borrar
+            localStorage.
+        */
+
+        if(
+            usuario.autenticadoSupabase === true
+        ){
+
+            passwordCorrecta =
+                true;
 
         }else{
 
-           if(usuario.autenticadoSupabase === true){
-
-                passwordCorrecta = true;
-
-            }else{
-
-                passwordCorrecta =
-                    await verificarPassword(
-                        password,
-                        usuario
-                    );
-
-}
-
+            passwordCorrecta =
+                await verificarPassword(
+                    password,
+                    usuario
+                );
         }
+
 
     }catch(error){
 
@@ -711,31 +732,29 @@ if(!usuario){
         mensaje.innerHTML =
             "No fue posible validar las credenciales.";
 
-        mensaje.classList.remove(
-            "d-none"
-        );
+        mensaje.classList.remove("d-none");
 
         return;
-
     }
 
+
+    /*=====================================================
+        6. VALIDAR RESULTADO
+    =====================================================*/
 
     if(!passwordCorrecta){
 
         mensaje.innerHTML =
             "Usuario o contraseña incorrectos.";
 
-        mensaje.classList.remove(
-            "d-none"
-        );
+        mensaje.classList.remove("d-none");
 
         return;
-
     }
 
 
     /*=====================================================
-        MIGRAR CONTRASEÑA ANTIGUA A HASH
+        7. MIGRAR CONTRASEÑA ANTIGUA A HASH
     =====================================================*/
 
     if(
@@ -754,22 +773,15 @@ if(!usuario){
             usuario.passwordHash =
                 seguridad.hash;
 
-
             usuario.passwordSalt =
                 seguridad.salt;
-
 
             usuario.passwordAlgoritmo =
                 seguridad.algoritmo;
 
-
             usuario.passwordIteraciones =
                 seguridad.iteraciones;
 
-
-            /*
-                ELIMINAR CONTRASEÑA EN TEXTO PLANO
-            */
 
             delete usuario.passwordTemporal;
 
@@ -788,23 +800,12 @@ if(!usuario){
                 "Error migrando contraseña:",
                 error
             );
-
-
-            /*
-                NO BLOQUEAMOS EL LOGIN.
-
-                La contraseña fue validada correctamente
-                con el sistema anterior, pero la migración
-                podrá intentarse en el próximo acceso.
-            */
-
         }
-
     }
 
 
     /*=====================================================
-        CREAR SESION LOCAL
+        8. CREAR SESION LOCAL
     =====================================================*/
 
     DB.sesion = {
@@ -815,7 +816,6 @@ if(!usuario){
         inicio:
             new Date()
                 .toISOString()
-
     };
 
 
@@ -826,11 +826,12 @@ if(!usuario){
         JSON.stringify(
             DB.sesion
         )
-
     );
 
 
-    /* REGISTRAR ULTIMO ACCESO */
+    /*=====================================================
+        9. REGISTRAR ULTIMO ACCESO
+    =====================================================*/
 
     usuario.ultimoAcceso =
         new Date()
@@ -840,7 +841,9 @@ if(!usuario){
     DB.guardar();
 
 
-    /* MOSTRAR APLICACION */
+    /*=====================================================
+        10. MOSTRAR APLICACION
+    =====================================================*/
 
     mostrarAplicacion();
 
@@ -1097,9 +1100,6 @@ function cerrarSesion(){
 }
 
 
-/*=========================================================
-    INICIALIZAR
-=========================================================*/
 /*=========================================================
     CONTROL DE PANTALLA LOGIN
 =========================================================*/
