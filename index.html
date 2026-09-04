@@ -1403,8 +1403,14 @@
                         Exporta la información registrada de tus clientes.
                     </p>
 
-                    <button class="btn btn-success w-100">
+                    <button 
+                        id="btnExportarClientes"
+                        
+                        
+                        class="btn btn-success w-100"
 
+                        onclick="exportarClientesExcel()">
+                        
                         <i class="fa fa-file-export"></i>
 
                         Exportar Clientes
@@ -1438,7 +1444,10 @@
                         Exporta el detalle general de la cartera de préstamos.
                     </p>
 
-                    <button class="btn btn-primary w-100">
+                    <button
+                        id="btnExportarPrestamos"
+                        class="btn btn-primary w-100"
+                        onclick="exportarPrestamosExcel()">
 
                         <i class="fa fa-file-export"></i>
 
@@ -1473,7 +1482,10 @@
                         Exporta el historial de pagos y movimientos registrados.
                     </p>
 
-                    <button class="btn btn-warning w-100">
+                    <button
+                        id="btnExportarPagos"
+                        class="btn btn-warning w-100"
+                        onclick="exportarPagosExcel()">
 
                         <i class="fa fa-file-export"></i>
 
@@ -1508,9 +1520,12 @@
                         Genera una copia de seguridad de los datos de BKC.
                     </p>
 
-                    <button class="btn btn-dark w-100">
+                    <button
+                        id="btnCopiaSeguridad"
+                        class="btn btn-dark w-100"
+                        onclick="crearCopiaSeguridad()">
 
-                        <i class="fa fa-download"></i>
+                        <i class="fa fa-database"></i>
 
                         Copia de Seguridad
 
@@ -2996,6 +3011,9 @@
     <!-- Chart.js -->
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 
     <!-- jsPDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
