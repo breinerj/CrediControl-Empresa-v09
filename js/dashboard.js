@@ -442,10 +442,18 @@ else if(
 
         const totalHoy =
             cobrosFiltrados
-                .filter(
-                    cuota =>
-                        cuota.fecha === hoy()
-                )
+                .filter(cuota => {
+
+                    const saldo =
+                        Number(cuota.valor || 0) -
+                        Number(cuota.pagado || 0);
+
+                    return (
+                        cuota.fecha <= hoy() &&
+                        saldo > 0
+                    );
+
+                })
                 .reduce(
                     (total, cuota) =>
                         total +
