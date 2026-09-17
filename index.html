@@ -992,6 +992,10 @@
                                             Diario
                                         </option>
 
+                                        <option value="Semanal">
+                                            Semanal
+                                        </option>
+
                                         <option value="Mensual">
                                             Mensual
                                         </option>
@@ -2878,57 +2882,97 @@
 
                                     <div class="row">
 
-                                        <div class="col-md-3">
+                                        <div class="col-md-4 mb-3">
 
-                                            <label>Nuevo plazo</label>
+                                            <label class="form-label">
+                                                Último corte de intereses
+                                            </label>
 
-                                            <input id="nuevoPlazo" type="number" class="form-control">
-
-                                        </div>
-
-                                        <div class="col-md-3">
-
-                                            <label>Nueva tasa (%)</label>
-
-                                            <input id="nuevaTasa" type="number" class="form-control">
-
-                                        </div>
-
-                                        <div class="col-md-3">
-
-                                            <label>Periodicidad</label>
-
-                                            <select id="nuevaPeriodicidad" class="form-select">
-
-                                                <option>
-
-                                                    Mensual
-
-                                                </option>
-
-                                                <option>
-
-                                                    Quincenal
-
-                                                </option>
-
-                                            </select>
+                                            <input
+                                                type="date"
+                                                id="resUltimoCorte"
+                                                class="form-control"
+                                                readonly
+                                            >
 
                                         </div>
 
-                                        <div class="col-md-3">
 
-                                            <label>Primer pago</label>
+                                        <div class="col-md-4 mb-3">
 
-                                            <input id="nuevoPrimerPago" type="date" class="form-control">
+                                            <label class="form-label">
+                                                Días de interés
+                                            </label>
+
+                                            <input
+                                                type="number"
+                                                id="resDiasInteres"
+                                                class="form-control"
+                                                readonly
+                                            >
 
                                         </div>
+
+
+                                        <div class="col-md-4 mb-3">
+
+                                            <label class="form-label">
+                                                Fecha de pago total / Fecha de corte
+                                            </label>
+
+                                            <input
+                                                type="date"
+                                                id="fechaPagoTotal"
+                                                class="form-control"
+                                            >
+
+                                        </div>
+
+                                    </div>
+
+
+                                    <div class="row">
+
+                                        <div class="col-md-6 mb-3">
+
+                                            <label class="form-label">
+                                                Interés causado
+                                            </label>
+
+                                            <input
+                                                type="text"
+                                                id="resInteresCausado"
+                                                class="form-control"
+                                                readonly
+                                            >
+
+                                        </div>
+
+
+                                        <div class="col-md-6 mb-3">
+
+                                            <label class="form-label">
+                                                TOTAL A PAGAR
+                                            </label>
+
+                                            <input
+                                                type="text"
+                                                id="resTotalPagar"
+                                                class="form-control fw-bold"
+                                                readonly
+                                            >
+
+                                        </div>
+
+                                    </div>
 
                                     </div>
 
                                 </div>
 
                             </div>
+
+
 
                             <!-- ==============================
                      SIMULACIÓN
