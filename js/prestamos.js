@@ -1458,11 +1458,14 @@ function abrirReestructuracion(id){
     document.getElementById("resInteresRec").value =
         dinero(prestamo.interesRecuperado);
 
-        // Valores iniciales para la simulación
-    document.getElementById("nuevoPlazo").value = 12;
-    document.getElementById("nuevaTasa").value = 5;
-    document.getElementById("nuevoPrimerPago").value =
-        new Date().toISOString().substring(0,10);
+      
+
+    const fechaPagoTotal =
+        document.getElementById("fechaPagoTotal");
+
+    if(fechaPagoTotal){
+        fechaPagoTotal.value = hoy();
+}
 
     actualizarVistaPreviaReestructuracion(prestamo);
 
@@ -1514,139 +1517,253 @@ let prestamoReestructuracion = null;
 /*=========================================================
     CALCULAR SALDO PROVISIONAL PARA REESTRUCTURACION
 =========================================================*/
-
 function calcularSaldoProvisional(prestamo){
 
-    // Capital que realmente queda pendiente
     const capitalPendiente =
         Number(prestamo.saldoCapital || 0);
 
-    // Capital inicial del préstamo
     const capitalInicial =
         Number(prestamo.capital || 0);
 
-    // Tasa mensual original
     const tasa =
         Number(prestamo.interes || 0);
 
-    // Buscar pagos realizados para este préstamo
-    const pagosPrestamo = (DB.pagos || []).filter(
 
-        pago =>
-            Number(pago.prestamo) === Number(prestamo.id)
+    /*=========================================================
+        FECHA ORIGINAL DEL CRÉDITO
+    =========================================================*/
 
-    );
-
-    let fechaInicioPeriodo;
-
-    // Si existen pagos, buscamos el último
-    if(pagosPrestamo.length > 0){
-
-        pagosPrestamo.sort(
-
-            (a,b) =>
-                new Date(b.fecha) - new Date(a.fecha)
-
-        );
-
-        fechaInicioPeriodo =
-            pagosPrestamo[0].fecha;
-
-    }else{
-
-        // Si todavía no ha pagado ninguna cuota,
-        // usamos la fecha de creación del préstamo
-
-        fechaInicioPeriodo =
-            prestamo.fechaPrestamo;
-
-    }
+    const fechaPrestamo =
+        prestamo.fechaPrestamo;
 
 
-    if(!fechaInicioPeriodo){
+    if(!fechaPrestamo){
 
         return {
 
-            capitalPendiente:capitalPendiente,
+            capitalPendiente,
+            capitalInicial,
+            tasa,
 
-            diasTranscurridos:0,
+            fechaInicio: null,
+            fechaPagoTotal: hoy(),
 
-            interesProporcional:0,
+            diasTranscurridos: 0,
 
-            saldoProvisional:capitalPendiente
+            interesMensual: 0,
+            interesProporcional: 0,
+
+            saldoProvisional:
+                capitalPendiente
 
         };
-
     }
 
 
-    const fechaInicio =
-        new Date(fechaInicioPeriodo + "T00:00:00");
+    /*=========================================================
+        FECHA DE PAGO TOTAL / FECHA DE CORTE
+    =========================================================*/
 
-    const fechaActual =
-        new Date(hoy() + "T00:00:00");
+    const campoFechaPagoTotal =
+        document.getElementById(
+            "fechaPagoTotal"
+        );
+
+    const fechaPagoTotal =
+        campoFechaPagoTotal?.value ||
+        hoy();
 
 
-    let diasTranscurridos = Math.floor(
+    /*=========================================================
+        CONVERTIR FECHA ORIGINAL Y FECHA DE PAGO TOTAL
+    =========================================================*/
 
-        (fechaActual - fechaInicio) /
+    const fechaOriginal =
+        new Date(
+            fechaPrestamo + "T00:00:00"
+        );
 
-        (1000 * 60 * 60 * 24)
+    const fechaFin =
+        new Date(
+            fechaPagoTotal + "T00:00:00"
+        );
 
+
+    /*=========================================================
+        DÍA ANCLA DEL CRÉDITO
+
+        Ejemplo:
+
+        Crédito:
+        08/05/2026
+
+        Día ancla:
+        8
+
+        Los cortes serán:
+
+        08/06
+        08/07
+        08/08
+        08/09
+        08/10
+        etc.
+    =========================================================*/
+
+    const diaAncla =
+        fechaOriginal.getDate();
+
+
+    /*=========================================================
+        DETERMINAR EL ÚLTIMO CORTE DE INTERÉS
+
+        Buscamos el último día "8" que haya ocurrido
+        antes o en la fecha de pago total.
+
+        Ejemplo:
+
+        Fecha pago total:
+        17/09/2026
+
+        Último corte:
+        08/09/2026
+    =========================================================*/
+
+    let ultimoCorte =
+        new Date(fechaFin);
+
+
+    ultimoCorte.setDate(
+        diaAncla
     );
 
 
-    // Evitar valores negativos
+    /*
+        Si el día ancla todavía no ha ocurrido
+        en el mes de la fecha de pago total,
+        retrocedemos al mes anterior.
+    */
+
+    if(ultimoCorte > fechaFin){
+
+        ultimoCorte.setMonth(
+            ultimoCorte.getMonth() - 1
+        );
+
+        ultimoCorte.setDate(
+            diaAncla
+        );
+    }
+
+
+    /*=========================================================
+        EVITAR QUE EL CORTE SEA ANTERIOR A LA FECHA ORIGINAL
+    =========================================================*/
+
+    if(ultimoCorte < fechaOriginal){
+
+        ultimoCorte =
+            new Date(fechaOriginal);
+    }
+
+
+    /*=========================================================
+        CALCULAR DÍAS DESDE EL ÚLTIMO CORTE
+
+        Ejemplo:
+
+        Último corte:
+        08/09/2026
+
+        Fecha pago total:
+        17/09/2026
+
+        Resultado:
+        9 días
+    =========================================================*/
+
+    let diasTranscurridos =
+        Math.floor(
+            (
+                fechaFin -
+                ultimoCorte
+            ) /
+            (1000 * 60 * 60 * 24)
+        );
+
 
     diasTranscurridos =
-        Math.max(diasTranscurridos,0);
+        Math.max(
+            diasTranscurridos,
+            0
+        );
 
 
-    // Interés mensual sobre el capital inicial
-    // según la regla definida para la liquidación
+    /*=========================================================
+        INTERÉS MENSUAL
+
+        Para interés fijo se utiliza SIEMPRE
+        el CAPITAL INICIAL.
+
+        No utilizamos el saldo pendiente.
+    =========================================================*/
 
     const interesMensual =
-        capitalInicial * (tasa / 100);
+        capitalInicial *
+        (tasa / 100);
 
 
-    // Interés proporcional usando mes financiero de 30 días
+    /*=========================================================
+        INTERÉS PROPORCIONAL
+
+        Mes financiero = 30 días
+    =========================================================*/
 
     const interesProporcional =
-
         interesMensual *
-
         (diasTranscurridos / 30);
 
 
-    // Capital pendiente + interés causado
+    /*=========================================================
+        SALDO A REESTRUCTURAR
+
+        Capital pendiente
+        +
+        interés causado desde el último corte
+    =========================================================*/
 
     const saldoProvisional =
-
         capitalPendiente +
-
         interesProporcional;
 
 
+    /*=========================================================
+        RESULTADO
+    =========================================================*/
+
     return {
 
-        capitalPendiente:
+        capitalPendiente,
 
-            capitalPendiente,
+        capitalInicial,
 
-        diasTranscurridos:
+        tasa,
 
-            diasTranscurridos,
+        fechaInicio:
+            ultimoCorte
+                .toISOString()
+                .substring(0,10),
 
-        interesProporcional:
+        fechaPagoTotal,
 
-            interesProporcional,
+        diasTranscurridos,
 
-        saldoProvisional:
+        interesMensual,
 
-            saldoProvisional
+        interesProporcional,
 
+        saldoProvisional
     };
-
 }
 
 function actualizarVistaPreviaReestructuracion(prestamo){
@@ -1657,77 +1774,114 @@ function actualizarVistaPreviaReestructuracion(prestamo){
 
     if(!prestamoReestructuracion) return;
 
+
+    /*=========================================================
+        CALCULAR LIQUIDACIÓN TOTAL
+    =========================================================*/
+
     const liquidacion =
-    calcularSaldoProvisional(prestamoReestructuracion);
+        calcularSaldoProvisional(
+            prestamoReestructuracion
+        );
 
-    const saldo =
-    liquidacion.saldoProvisional;
 
-    console.log("Liquidación provisional:", liquidacion);
-
-    const meses = Number(
-        document.getElementById("nuevoPlazo").value
+    console.log(
+        "Liquidación total para reestructuración:",
+        liquidacion
     );
 
-    const interes = Number(
-        document.getElementById("nuevaTasa").value
-    );
 
-    const periodicidad =
-        document.getElementById("nuevaPeriodicidad").value;
+    /*=========================================================
+        MOSTRAR ÚLTIMO CORTE
+    =========================================================*/
 
-    const primerPago =
-        document.getElementById("nuevoPrimerPago").value;
+    const campoUltimoCorte =
+        document.getElementById("resUltimoCorte");
+
+    if(campoUltimoCorte){
+
+        campoUltimoCorte.value =
+            liquidacion.fechaInicio || "";
+
+    }
+
+
+    /*=========================================================
+        MOSTRAR DÍAS DE INTERÉS
+    =========================================================*/
+
+    const campoDias =
+        document.getElementById("resDiasInteres");
+
+    if(campoDias){
+
+        campoDias.value =
+            liquidacion.diasTranscurridos || 0;
+
+    }
+
+
+    /*=========================================================
+        MOSTRAR INTERÉS CAUSADO
+    =========================================================*/
+
+    const campoInteres =
+        document.getElementById("resInteresCausado");
+
+    if(campoInteres){
+
+        campoInteres.value =
+            dinero(
+                liquidacion.interesProporcional || 0
+            );
+
+    }
+
+
+    /*=========================================================
+        MOSTRAR TOTAL A PAGAR
+    =========================================================*/
+
+    const campoTotal =
+        document.getElementById("resTotalPagar");
+
+    if(campoTotal){
+
+        campoTotal.value =
+            dinero(
+                liquidacion.saldoProvisional || 0
+            );
+
+    }
+
+
+    /*=========================================================
+        YA NO SE GENERAN CUOTAS
+
+        La reestructuración es una liquidación
+        para pago total.
+    =========================================================*/
 
     const tabla =
-        document.getElementById("tablaReestructuracion");
+        document.getElementById(
+            "tablaReestructuracion"
+        );
 
-    if(
-        saldo<=0 ||
-        meses<=0 ||
-        primerPago==""
-    ){
-        tabla.innerHTML="";
-        return;
-    }
 
-    let cuotas = meses;
+    if(tabla){
 
-    if(periodicidad=="Quincenal"){
-        cuotas = meses*2;
-    }
+        tabla.innerHTML = `
+            <tr>
+                <td colspan="6"
+                    class="text-center text-muted py-3">
 
-    const interesTotal =
-        saldo*(interes/100)*meses;
+                    El crédito será liquidado
+                    completamente en la fecha
+                    de pago acordada.
 
-    const capitalCuota = saldo/cuotas;
-    const interesCuota = interesTotal/cuotas;
-    const valorCuota = capitalCuota+interesCuota;
-
-    let saldoPendiente = saldo;
-    let fecha = new Date(primerPago);
-
-    tabla.innerHTML="";
-
-    for(let i=1;i<=cuotas;i++){
-
-        saldoPendiente -= capitalCuota;
-
-        tabla.innerHTML += `
-        <tr>
-            <td>${i}</td>
-            <td>${fecha.toISOString().substring(0,10)}</td>
-            <td>${dinero(capitalCuota)}</td>
-            <td>${dinero(interesCuota)}</td>
-            <td>${dinero(valorCuota)}</td>
-            <td>${dinero(Math.max(saldoPendiente,0))}</td>
-        </tr>`;
-
-        if(periodicidad=="Mensual"){
-            fecha.setMonth(fecha.getMonth()+1);
-        }else{
-            fecha.setDate(fecha.getDate()+15);
-        }
+                </td>
+            </tr>
+        `;
 
     }
 
@@ -2019,346 +2173,279 @@ async function guardarReestructuracionSupabase(
 /*=========================================================
         GUARDAR REESTRUCTURACION
 =========================================================*/
-
 async function guardarReestructuracion(){
 
-     if(!esAdministrador()){
+    /*=========================================================
+        VALIDAR PERMISOS
+    =========================================================*/
+
+    if(!esAdministrador()){
 
         alert(
             "No tiene permisos para reestructurar préstamos."
         );
 
         return;
-
     }
+
 
     try{
 
+        /*=====================================================
+            VALIDAR PRÉSTAMO
+        =====================================================*/
+
         if(!prestamoReestructuracion){
 
-            alert("No hay un préstamo seleccionado.");
+            alert(
+                "No hay un préstamo seleccionado."
+            );
 
             return;
-
-        }
-
-        const prestamo = prestamoReestructuracion;
-
-        const meses = Number(
-            document.getElementById("nuevoPlazo").value
-        );
-
-        const interes = Number(
-            document.getElementById("nuevaTasa").value
-        );
-
-        const periodicidad =
-            document.getElementById("nuevaPeriodicidad").value;
-
-        const primerPago =
-            document.getElementById("nuevoPrimerPago").value;
-
-
-        if(meses <= 0){
-
-            alert("Ingrese un plazo válido.");
-
-            return;
-
-        }
-
-        if(interes < 0){
-
-            alert("Ingrese una tasa válida.");
-
-            return;
-
-        }
-
-        if(!primerPago){
-
-            alert("Seleccione la fecha del primer pago.");
-
-            return;
-
         }
 
 
-        /*=============================================
-            CALCULAR LIQUIDACION ACTUAL
-        =============================================*/
+        const prestamo =
+            prestamoReestructuracion;
+
+
+        /*=====================================================
+            OBTENER FECHA DE PAGO TOTAL
+        =====================================================*/
+
+        const campoFechaPagoTotal =
+            document.getElementById(
+                "fechaPagoTotal"
+            );
+
+
+        const fechaPagoTotal =
+            campoFechaPagoTotal?.value || "";
+
+
+        if(!fechaPagoTotal){
+
+            alert(
+                "Seleccione la fecha de pago total."
+            );
+
+            return;
+        }
+
+
+        /*=====================================================
+            CALCULAR LIQUIDACIÓN
+        =====================================================*/
 
         const liquidacion =
-            calcularSaldoProvisional(prestamo);
+            calcularSaldoProvisional(
+                prestamo
+            );
+
 
         const capitalPendiente =
-            Number(liquidacion.capitalPendiente || 0);
+            Number(
+                liquidacion.capitalPendiente || 0
+            );
+
 
         const interesCausado =
-            Number(liquidacion.interesProporcional || 0);
+            Number(
+                liquidacion.interesProporcional || 0
+            );
+
 
         const saldoProvisional =
-            capitalPendiente + interesCausado;
+            capitalPendiente +
+            interesCausado;
 
+
+        /*=====================================================
+            VALIDAR SALDO
+        =====================================================*/
 
         if(saldoProvisional <= 0){
 
-            alert("El préstamo no tiene saldo pendiente.");
+            alert(
+                "El préstamo no tiene saldo pendiente."
+            );
 
             return;
-
         }
 
 
-        /*=============================================
-            GUARDAR HISTORIAL ANTES DE MODIFICAR
-        =============================================*/
+        /*=====================================================
+            CONFIRMACIÓN DEL TOTAL
+        =====================================================*/
 
-        if(!prestamo.historialReestructuraciones){
+        const confirmar =
+            confirm(
+
+                "LIQUIDACIÓN PARA PAGO TOTAL\n\n" +
+
+                "Capital pendiente: " +
+                dinero(capitalPendiente) +
+                "\n\n" +
+
+                "Interés causado: " +
+                dinero(interesCausado) +
+                "\n\n" +
+
+                "TOTAL A PAGAR: " +
+                dinero(saldoProvisional) +
+                "\n\n" +
+
+                "Fecha de pago total: " +
+                fechaPagoTotal +
+                "\n\n" +
+
+                "¿Desea confirmar esta liquidación?"
+            );
+
+
+        if(!confirmar){
+
+            return;
+        }
+
+
+        /*=====================================================
+            CREAR HISTORIAL
+        =====================================================*/
+
+        if(
+            !Array.isArray(
+                prestamo.historialReestructuraciones
+            )
+        ){
 
             prestamo.historialReestructuraciones = [];
 
         }
 
+
         prestamo.historialReestructuraciones.push({
 
-            fecha:hoy(),
+            fecha:
+                hoy(),
 
-            capitalOriginal:
-                Number(prestamo.capital || 0),
+            tipoOperacion:
+                "PAGO_TOTAL",
 
-            tasaAnterior:
-                Number(prestamo.interes || 0),
+            fechaPagoTotal:
+                fechaPagoTotal,
 
-            plazoAnterior:
-                Number(prestamo.meses || 0),
-
-            periodicidadAnterior:
-                prestamo.periodicidad,
-
-            saldoCapitalAnterior:
-                Number(prestamo.saldoCapital || 0),
-
-            saldoTotalAnterior:
-                Number(prestamo.saldoTotal || 0),
-
-            capitalRecuperado:
-                Number(prestamo.capitalRecuperado || 0),
-
-            interesRecuperado:
-                Number(prestamo.interesRecuperado || 0),
+            fechaUltimoCorte:
+                liquidacion.fechaInicio,
 
             diasTranscurridos:
                 liquidacion.diasTranscurridos,
+
+            capitalOriginal:
+                Number(
+                    prestamo.capital || 0
+                ),
+
+            capitalPendiente:
+                capitalPendiente,
+
+            tasaOriginal:
+                Number(
+                    prestamo.interes || 0
+                ),
 
             interesCausado:
                 interesCausado,
 
             saldoReestructurado:
-                saldoProvisional,
-
-            nuevaTasa:
-                interes,
-
-            nuevoPlazo:
-                meses,
-
-            nuevaPeriodicidad:
-                periodicidad,
-
-            nuevoPrimerPago:
-                primerPago
+                saldoProvisional
 
         });
 
 
-        /*=============================================
-            GENERAR NUEVO CRONOGRAMA
-        =============================================*/
+        /*=====================================================
+            CREAR UNA ÚNICA OBLIGACIÓN DE PAGO TOTAL
 
-        let cuotas = meses;
+            NO SE CREAN CUOTAS MENSUALES
+            NO SE CREAN CUOTAS QUINCENALES
+            NO SE GENERA INTERÉS NUEVO
+        =====================================================*/
 
-        let tasaPeriodo = interes;
+        const nuevoCronograma = [
 
-        if(periodicidad === "Quincenal"){
+            {
 
-            cuotas = meses * 2;
-
-            tasaPeriodo = interes / 2;
-
-        }
-
-
-        /*
-            El capital financiero real sigue siendo
-            únicamente el capital pendiente.
-
-            El interés proporcional causado se agrega
-            como interés pendiente en la primera cuota.
-        */
-
-        const capitalCuota =
-            capitalPendiente / cuotas;
-
-
-        /*
-            Por ahora la reestructuración utiliza
-            interés fijo sobre el capital pendiente.
-        */
-
-        const interesPeriodo =
-            capitalPendiente *
-            (tasaPeriodo / 100);
-
-
-        let saldoCapital =
-            capitalPendiente;
-
-        let fecha =
-            new Date(primerPago + "T00:00:00");
-
-        let nuevoCronograma = [];
-
-
-        for(let i = 1; i <= cuotas; i++){
-
-            let interesCuota =
-                interesPeriodo;
-
-            /*
-                El interés causado antes de la
-                reestructuración se cobra en la
-                primera cuota.
-            */
-
-            if(i === 1){
-
-                interesCuota +=
-                    interesCausado;
-
-            }
-
-
-            const valorCuota =
-                capitalCuota +
-                interesCuota;
-
-
-            saldoCapital -=
-                capitalCuota;
-
-
-            nuevoCronograma.push({
-
-                numero:i,
+                numero:
+                    1,
 
                 fecha:
-                    fecha
-                    .toISOString()
-                    .substring(0,10),
+                    fechaPagoTotal,
 
                 capital:
-                    capitalCuota,
+                    capitalPendiente,
 
                 interes:
-                    interesCuota,
+                    interesCausado,
 
                 valor:
-                    valorCuota,
+                    saldoProvisional,
 
                 saldo:
-                    Math.max(
-                        saldoCapital,
-                        0
-                    ),
+                    saldoProvisional,
 
-                pagado:0,
+                pagado:
+                    0,
 
-                estado:"PENDIENTE"
-
-            });
-
-
-            if(periodicidad === "Mensual"){
-
-                fecha.setMonth(
-                    fecha.getMonth() + 1
-                );
-
-            }else{
-
-                fecha.setDate(
-                    fecha.getDate() + 15
-                );
+                estado:
+                    "PENDIENTE"
 
             }
 
-        }
+        ];
 
 
-        /*=============================================
-            CALCULAR NUEVO TOTAL PENDIENTE
-        =============================================*/
+        /*=====================================================
+            ACTUALIZAR EL PRÉSTAMO
 
-        const nuevoInteresTotal =
-            nuevoCronograma.reduce(
-
-                (total, cuota) =>
-                    total +
-                    Number(cuota.interes || 0),
-
-                0
-
-            );
-
-
-        const nuevoSaldoTotal =
-            capitalPendiente +
-            nuevoInteresTotal;
-
-
-        /*=============================================
-            ACTUALIZAR EL MISMO PRESTAMO
-        =============================================*/
-
-        prestamo.interes =
-            interes;
-
-        prestamo.meses =
-            meses;
-
-        prestamo.periodicidad =
-            periodicidad;
-
-        prestamo.primerPago =
-            primerPago;
+            CONSERVAMOS SUS CONDICIONES ORIGINALES.
+            NO CAMBIAMOS PLAZO NI TASA.
+        =====================================================*/
 
         prestamo.interesTotal =
-            nuevoInteresTotal;
+            interesCausado;
+
 
         prestamo.saldoCapital =
             capitalPendiente;
 
+
         prestamo.saldoTotal =
-            nuevoSaldoTotal;
+            saldoProvisional;
+
 
         prestamo.cronograma =
             nuevoCronograma;
 
+
         prestamo.estado =
             "ACTIVO";
 
+
         prestamo.reestructurado =
             true;
+
 
         prestamo.fechaUltimaReestructuracion =
             hoy();
 
 
-        /*=============================================
-    SINCRONIZAR REESTRUCTURACION
-    CON SUPABASE
-=============================================*/
+        prestamo.fechaPagoTotalReestructuracion =
+            fechaPagoTotal;
+
+
+        /*=====================================================
+            SINCRONIZAR CON SUPABASE
+        =====================================================*/
 
         const sincronizado =
             await guardarReestructuracionSupabase(
@@ -2370,55 +2457,74 @@ async function guardarReestructuracion(){
         if(!sincronizado){
 
             alert(
-                "No fue posible guardar la reestructuración en Supabase."
+                "No fue posible guardar la liquidación en Supabase."
             );
 
             return;
-
         }
 
 
-        /*=============================================
+        /*=====================================================
             GUARDAR COPIA LOCAL
-        =============================================*/
+        =====================================================*/
 
         DB.guardar();
 
 
-        /*=============================================
+        /*=====================================================
             ACTUALIZAR INTERFAZ
-        =============================================*/
+        =====================================================*/
 
         listarPrestamos();
 
         actualizarDashboard();
 
+
         modalReestructuracion.hide();
 
-        prestamoReestructuracion = null;
 
+        prestamoReestructuracion =
+            null;
+
+
+        /*=====================================================
+            CONFIRMACIÓN
+        =====================================================*/
 
         alert(
-            "Reestructuración guardada correctamente."
+
+            "Liquidación para pago total guardada correctamente.\n\n" +
+
+            "Fecha de pago: " +
+            fechaPagoTotal +
+            "\n\n" +
+
+            "Total a pagar: " +
+            dinero(saldoProvisional) +
+            "\n\n" +
+
+            "El crédito queda pendiente de pago total."
         );
 
 
     }catch(error){
 
         console.error(
-            "Error al guardar reestructuración:",
+            "Error al guardar liquidación para pago total:",
             error
         );
 
+
         alert(
-            "No fue posible guardar la reestructuración: " +
+
+            "No fue posible guardar la liquidación:\n\n" +
             error.message
+
         );
 
     }
 
 }
-
 
 /*=========================================================
         BOTON GUARDAR REESTRUCTURACION

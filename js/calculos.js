@@ -240,6 +240,9 @@ function generarVistaCronograma(
 /*=========================================================
         CREAR CRONOGRAMA PARA GUARDAR
 =========================================================*/
+/*=========================================================
+        CREAR CRONOGRAMA PARA GUARDAR
+=========================================================*/
 
 function construirCronograma(){
 
@@ -252,10 +255,9 @@ function construirCronograma(){
     );
 
     let tipoInteres =
-    document.getElementById("tipoInteres")?.value || "fijo";
+        document.getElementById("tipoInteres")?.value || "fijo";
 
-        console.log("Tipo:", tipoInteres);
-       
+    console.log("Tipo:", tipoInteres);
 
     let meses = Number(
         document.getElementById("meses").value
@@ -264,78 +266,149 @@ function construirCronograma(){
     let periodicidad =
         document.getElementById("periodicidad").value;
 
-    let cuotas = meses;
+    /*
+    =========================================================
+        DETERMINAR NÚMERO DE CUOTAS Y TASA POR PERÍODO
+    =========================================================
+    */
 
+    let cuotas = meses;
     let tasaPeriodo = interes;
 
-    if(periodicidad == "Diario"){
-
-        cuotas = meses * 30;
-
-        // Convertir la tasa mensual a tasa diaria
-        tasaPeriodo = interes / 30;
-
-    }
-    
-    else if(periodicidad == "Quincenal"){
+    if(periodicidad == "Quincenal"){
 
         cuotas = meses * 2;
 
-        // Convertir la tasa mensual a tasa quincenal
+        // Interés mensual dividido en 2 quincenas
         tasaPeriodo = interes / 2;
 
     }
+
+    else if(periodicidad == "Semanal"){
+
+        cuotas = meses * 4;
+
+        // Interés mensual dividido en 4 semanas
+        tasaPeriodo = interes / 4;
+
+    }
+
+    else if(periodicidad == "Diario"){
+
+        cuotas = meses * 30;
+
+        // Interés mensual dividido en 30 días
+        tasaPeriodo = interes / 30;
+
+    }
+
+    /*
+    =========================================================
+        CAPITAL DE CADA CUOTA
+    =========================================================
+    */
 
     let capitalCuota = capital / cuotas;
 
     let saldo = capital;
 
+    /*
+    =========================================================
+        FECHA DEL PRIMER PAGO
+    =========================================================
+    */
+
     let fechaPago = new Date(
-        document.getElementById("primerPago").value
+        document.getElementById("primerPago").value + "T00:00:00"
     );
 
     let cronograma = [];
 
-    for(let i=1;i<=cuotas;i++){
+    /*
+    =========================================================
+        CONSTRUIR CADA CUOTA
+    =========================================================
+    */
+
+    for(let i = 1; i <= cuotas; i++){
 
         let interesCuota;
 
-        if(tipoInteres=="fijo"){
+        /*
+        -----------------------------------------------------
+            INTERÉS FIJO
+        -----------------------------------------------------
+        */
+
+        if(tipoInteres == "fijo"){
 
             interesCuota =
                 capital * (tasaPeriodo / 100);
 
-        }else{
+        }
+
+        /*
+        -----------------------------------------------------
+            INTERÉS SOBRE SALDO
+        -----------------------------------------------------
+        */
+
+        else{
 
             interesCuota =
                 saldo * (tasaPeriodo / 100);
 
         }
 
+        /*
+        -----------------------------------------------------
+            VALOR TOTAL DE LA CUOTA
+        -----------------------------------------------------
+        */
+
         let valorCuota =
             capitalCuota + interesCuota;
 
+        /*
+        -----------------------------------------------------
+            ACTUALIZAR SALDO
+        -----------------------------------------------------
+        */
+
         saldo -= capitalCuota;
+
+        /*
+        -----------------------------------------------------
+            GUARDAR CUOTA
+        -----------------------------------------------------
+        */
 
         cronograma.push({
 
-            numero:i,
+            numero: i,
 
-            fecha:fechaPago.toISOString().substring(0,10),
+            fecha:
+                fechaPago.toISOString().substring(0,10),
 
-            capital:capitalCuota,
+            capital: capitalCuota,
 
-            interes:interesCuota,
+            interes: interesCuota,
 
-            valor:valorCuota,
+            valor: valorCuota,
 
-            saldo:Math.max(saldo,0),
+            saldo: Math.max(saldo,0),
 
-            pagado:0,
+            pagado: 0,
 
-            estado:"PENDIENTE"
+            estado: "PENDIENTE"
 
         });
+
+        /*
+        =====================================================
+            CALCULAR SIGUIENTE FECHA
+        =====================================================
+        */
 
         if(periodicidad == "Diario"){
 
@@ -343,13 +416,52 @@ function construirCronograma(){
                 fechaPago.getDate() + 1
             );
 
-        }else if(periodicidad == "Quincenal"){
+        }
+
+        else if(periodicidad == "Semanal"){
 
             fechaPago.setDate(
-                fechaPago.getDate() + 15
+                fechaPago.getDate() + 7
             );
 
-        }else if(periodicidad == "Mensual"){
+        }
+
+        else if(periodicidad == "Quincenal"){
+
+            /*
+            -------------------------------------------------
+                QUINCENAL
+                Alterna entre los días 15 y 30
+            -------------------------------------------------
+            */
+
+            let diaActual = fechaPago.getDate();
+
+            if(diaActual < 15){
+
+                fechaPago.setDate(15);
+
+            }
+
+            else if(diaActual < 30){
+
+                fechaPago.setDate(30);
+
+            }
+
+            else{
+
+                fechaPago.setMonth(
+                    fechaPago.getMonth() + 1
+                );
+
+                fechaPago.setDate(15);
+
+            }
+
+        }
+
+        else if(periodicidad == "Mensual"){
 
             fechaPago.setMonth(
                 fechaPago.getMonth() + 1
@@ -515,7 +627,6 @@ function recalcularSaldo(prestamo){
 
 }
 
-
 /*=========================================================
     NUEVO MOTOR FINANCIERO
 =========================================================*/
@@ -540,13 +651,36 @@ function calcularPrestamoCompleto(){
     const tipoInteres =
         document.getElementById("tipoInteres")?.value || "fijo";
 
+
+    /*=====================================================
+        DETERMINAR NÚMERO DE CUOTAS
+    =====================================================*/
+
     let cuotas = meses;
 
-    if(periodicidad=="Quincenal"){
+    if(periodicidad == "Quincenal"){
+
         cuotas = meses * 2;
+
+    }
+    else if(periodicidad == "Semanal"){
+
+        cuotas = meses * 4;
+
+    }
+    else if(periodicidad == "Diario"){
+
+        cuotas = meses * 30;
+
     }
 
-    const capitalCuota = capital / cuotas;
+
+    /*=====================================================
+        CAPITAL POR CUOTA
+    =====================================================*/
+
+    const capitalCuota =
+        capital / cuotas;
 
     let saldo = capital;
 
@@ -554,54 +688,133 @@ function calcularPrestamoCompleto(){
 
     let cronograma = [];
 
-    let fecha = document.getElementById("primerPago").value;
 
-    if(fecha==""){
+    /*=====================================================
+        FECHA PRIMER PAGO
+    =====================================================*/
+
+    let fecha =
+        document.getElementById("primerPago").value;
+
+    if(fecha == ""){
 
         fecha = hoy();
 
     }
 
-    let fechaPago = new Date(fecha);
+    let fechaPago =
+        new Date(fecha + "T00:00:00");
 
-    for(let i=1;i<=cuotas;i++){
+
+    /*=====================================================
+        DETERMINAR TASA POR PERÍODO
+    =====================================================*/
+
+    let divisorInteres = 1;
+
+    if(periodicidad == "Quincenal"){
+
+        divisorInteres = 2;
+
+    }
+    else if(periodicidad == "Semanal"){
+
+        divisorInteres = 4;
+
+    }
+    else if(periodicidad == "Diario"){
+
+        divisorInteres = 30;
+
+    }
+
+
+    const tasaPeriodo =
+        tasa / divisorInteres;
+
+
+    /*=====================================================
+        GENERAR CRONOGRAMA
+    =====================================================*/
+
+    for(let i = 1; i <= cuotas; i++){
 
         let interesCuota = 0;
 
-        if(tipoInteres=="fijo"){
+
+        /*-------------------------------------------------
+            INTERÉS FIJO
+        -------------------------------------------------*/
+
+        if(tipoInteres == "fijo"){
 
             interesCuota =
-                capital * (tasa/100) / (periodicidad=="Mensual" ? 1 : 2);
-
-        }else{
-
-            interesCuota =
-                saldo * (tasa/100) / (periodicidad=="Mensual" ? 1 : 2);
+                capital * (tasaPeriodo / 100);
 
         }
+
+
+        /*-------------------------------------------------
+            INTERÉS SOBRE SALDO
+        -------------------------------------------------*/
+
+        else{
+
+            interesCuota =
+                saldo * (tasaPeriodo / 100);
+
+        }
+
+
+        /*-------------------------------------------------
+            VALOR DE LA CUOTA
+        -------------------------------------------------*/
 
         const valorCuota =
             capitalCuota + interesCuota;
 
+
         interesTotal += interesCuota;
+
+
+        /*-------------------------------------------------
+            ACTUALIZAR SALDO
+        -------------------------------------------------*/
 
         saldo -= capitalCuota;
 
+
+        /*-------------------------------------------------
+            GUARDAR CUOTA
+        -------------------------------------------------*/
+
         cronograma.push({
 
-            numero:i,
+            numero: i,
 
-            fecha:fechaPago.toISOString().substring(0,10),
+            fecha:
+                fechaPago
+                    .toISOString()
+                    .substring(0,10),
 
-            capital:capitalCuota,
+            capital:
+                capitalCuota,
 
-            interes:interesCuota,
+            interes:
+                interesCuota,
 
-            valor:valorCuota,
+            valor:
+                valorCuota,
 
-            saldo:Math.max(saldo,0)
+            saldo:
+                Math.max(saldo,0)
 
         });
+
+
+        /*=================================================
+            CALCULAR SIGUIENTE FECHA
+        =================================================*/
 
         if(periodicidad == "Diario"){
 
@@ -609,13 +822,25 @@ function calcularPrestamoCompleto(){
                 fechaPago.getDate() + 1
             );
 
-        }else if(periodicidad == "Quincenal"){
+        }
+
+        else if(periodicidad == "Semanal"){
+
+            fechaPago.setDate(
+                fechaPago.getDate() + 7
+            );
+
+        }
+
+        else if(periodicidad == "Quincenal"){
 
             fechaPago.setDate(
                 fechaPago.getDate() + 15
             );
 
-        }else if(periodicidad == "Mensual"){
+        }
+
+        else if(periodicidad == "Mensual"){
 
             fechaPago.setMonth(
                 fechaPago.getMonth() + 1
@@ -625,7 +850,12 @@ function calcularPrestamoCompleto(){
 
     }
 
-    return{
+
+    /*=====================================================
+        RESULTADO FINAL
+    =====================================================*/
+
+    return {
 
         capital,
 
@@ -637,9 +867,13 @@ function calcularPrestamoCompleto(){
 
         interesTotal,
 
-        total:capital+interesTotal,
+        total:
+            capital + interesTotal,
 
-        valorCuota:cronograma.length ? cronograma[0].valor : 0,
+        valorCuota:
+            cronograma.length
+                ? cronograma[0].valor
+                : 0,
 
         cronograma
 
