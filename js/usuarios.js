@@ -63,42 +63,47 @@ function obtenerUsuario(id){
 }
 
 
-/*=========================================================
-    BUSCAR USUARIO POR NOMBRE DE USUARIO
-=========================================================*/
+function buscarUsuarioPorLogin(login) {
+    const valor = String(login || "").trim().toLowerCase();
 
-function buscarUsuarioPorLogin(login){
+    if (!Array.isArray(DB.usuarios)) {
+        return null;
+    }
 
-    return DB.usuarios.find(
-
-        usuario =>
-            usuario.usuario
-                .toLowerCase() ===
-            login.toLowerCase()
-
-    );
-
+    return DB.usuarios.find(usuario =>
+        String(usuario.usuario || "").trim().toLowerCase() === valor ||
+        String(usuario.correo || "").trim().toLowerCase() === valor ||
+        String(usuario.nombre || "").trim().toLowerCase() === valor
+    ) || null;
 }
-
 
 /*=========================================================
     OBTENER USUARIO ACTUAL
 =========================================================*/
 
-function obtenerUsuarioActual(){
+function obtenerUsuarioActual() {
 
-    if(!DB.sesion){
+    // Recuperar la sesión desde localStorage si no está en memoria.
+    if (!DB.sesion) {
+        try {
+            const sesionGuardada = localStorage.getItem(STORAGE.SESION);
 
-        return null;
-
+            if (sesionGuardada) {
+                DB.sesion = JSON.parse(sesionGuardada);
+            }
+        } catch (error) {
+            console.error("Error recuperando la sesión:", error);
+            return null;
+        }
     }
 
+    if (!DB.sesion || !DB.sesion.usuarioId) {
+        return null;
+    }
 
-    return obtenerUsuario(
-        DB.sesion.usuarioId
-    );
-
+    return obtenerUsuario(DB.sesion.usuarioId);
 }
+
 
 
 /*=========================================================
@@ -788,6 +793,87 @@ if(!usuario){
     }
 
 
+
+    /*=====================================================
+    6.1 AUTENTICAR EL COBRADOR EN SUPABASE
+=====================================================*/
+
+const rolLogin = String(usuario.rol || "")
+    .trim()
+    .toUpperCase();
+
+if (rolLogin === "COBRADOR") {
+    try {
+        const correoUsuario = String(usuario.correo || "")
+            .trim()
+            .toLowerCase();
+
+        if (!correoUsuario) {
+            throw new Error(
+                "El cobrador no tiene un correo asociado a su cuenta."
+            );
+        }
+
+        const {
+            data: authData,
+            error: authError
+        } = await supabaseClient.auth.signInWithPassword({
+            email: correoUsuario,
+            password: password
+        });
+
+        if (authError || !authData?.user) {
+            throw new Error(
+                "No fue posible autenticar al cobrador en Supabase. " +
+                "Verifica sus credenciales."
+            );
+        }
+
+        // Verificar que la sesión corresponda al cobrador esperado.
+        if (
+            usuario.auth_user_id &&
+            String(authData.user.id).toLowerCase() !==
+            String(usuario.auth_user_id).toLowerCase()
+        ) {
+            await supabaseClient.auth.signOut();
+
+            throw new Error(
+                "La cuenta autenticada en Supabase no coincide " +
+                "con el cobrador seleccionado."
+            );
+        }
+
+        // Guardar el identificador confirmado por Supabase.
+        usuario.auth_user_id = authData.user.id;
+        usuario.autenticadoSupabase = true;
+
+        DB.guardar();
+
+        console.log(
+            "Cobrador autenticado correctamente en Supabase:",
+            {
+                usuarioId: usuario.id,
+                rol: usuario.rol,
+                authUserId: authData.user.id
+            }
+        );
+
+    } catch (errorAuthCobrador) {
+        console.error(
+            "Error autenticando al cobrador en Supabase:",
+            errorAuthCobrador
+        );
+
+        mensaje.innerHTML =
+            errorAuthCobrador.message ||
+            "No fue posible autenticar al cobrador.";
+
+        mensaje.classList.remove("d-none");
+
+        return;
+    }
+}
+
     /*=====================================================
         7. MIGRAR CONTRASEÑA ANTIGUA A HASH
     =====================================================*/
@@ -1119,21 +1205,32 @@ DB.guardar();
 /*=========================================================
     CERRAR SESION
 =========================================================*/
+async function cerrarSesion() {
+    try {
+        if (window.supabaseClient) {
+            const { error } =
+                await window.supabaseClient.auth.signOut();
 
-function cerrarSesion(){
+            if (error) {
+                console.error(
+                    "Error cerrando sesión de Supabase:",
+                    error
+                );
+            }
+        }
+    } catch (error) {
+        console.error(
+            "Error durante el cierre de sesión:",
+            error
+        );
+    } finally {
+        DB.sesion = null;
 
-    DB.sesion = null;
+        localStorage.removeItem(STORAGE.SESION);
 
-
-    localStorage.removeItem(
-        STORAGE.SESION
-    );
-
-
-    location.reload();
-
+        location.reload();
+    }
 }
-
 
 /*=========================================================
     CONTROL DE PANTALLA LOGIN

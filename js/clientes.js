@@ -841,307 +841,230 @@ else {
 
 }
 /*=========================================================
-    LISTAR CLIENTES
+    LISTAR CLIENTES CON FILTRO POR COBRADOR
+    FILTRO EXCLUSIVO PARA ADMINISTRADOR
 =========================================================*/
 
 function listarClientes() {
 
-    const tabla =
-        document.getElementById("tablaClientes");
-
+    const tabla = document.getElementById("tablaClientes");
     if (!tabla) return;
 
+    const usuario = obtenerUsuarioActual();
 
-    /*
-        IDENTIFICAR USUARIO ACTUAL
-    */
-
-    const usuario =
-        obtenerUsuarioActual();
-
-    console.log(
-        "USUARIO DESDE LISTAR CLIENTES:",
-        usuario
-    );
-
-    if(!usuario){
-
-        console.warn(
-            "Usuario aún no disponible. Reintentando cargar clientes..."
-        );
-
-        setTimeout(
-            () => {
-                listarClientes();
-            },
-            500
-        );
-
+    if (!usuario) {
+        console.warn("Usuario aún no disponible.");
         return;
-
     }
 
+    const esAdmin = [
+        "ADMIN",
+        "ADMINISTRADOR"
+    ].includes(
+        String(usuario.rol || "").trim().toUpperCase()
+    );
 
-    /*
-        FILTRAR CLIENTES
-        SEGÚN EL ROL DEL USUARIO
-    */
+    const filtro = document.getElementById(
+        "filtroCobradorClientes"
+    );
 
-    let clientesFiltrados = [];
+    const select = document.getElementById(
+        "selectCobradorClientes"
+    );
 
+    // Mostrar el filtro exclusivamente al administrador.
+    if (filtro) {
+        filtro.classList.toggle("d-none", !esAdmin);
+    }
 
-    /*
-        ADMINISTRADOR
+    
+let clientesFiltrados = [];
 
-        Solo puede ver los clientes
-        que pertenecen a su cartera.
-    */
+if (esAdmin) {
 
-    if (
-        usuario.rol === "ADMINISTRADOR"
-    ) {
+    clientesFiltrados = [...DB.clientes];
 
-        clientesFiltrados =
-            DB.clientes;
+    const cobradorSeleccionado = select?.value || "";
 
-            }
+    if (cobradorSeleccionado === "SIN_ASIGNAR") {
 
+        clientesFiltrados = clientesFiltrados.filter(cliente => {
 
-    /*
-        COBRADOR
+            const cobradorId =
+                cliente.cobradorId ?? cliente.cobrador_id;
 
-        Solo puede ver los clientes
-        asignados directamente a él
-        y que ya estén aprobados.
-    */
+            const usuarioAsignadoId =
+                cliente.usuarioAsignadoId ??
+                cliente.usuario_asignado_id;
 
-    else if (
-    usuario.rol === "COBRADOR"
+            const sinCobrador =
+                cobradorId == null ||
+                String(cobradorId).trim() === "" ||
+                Number(cobradorId) === 0;
+
+            const sinUsuarioAsignado =
+                usuarioAsignadoId == null ||
+                String(usuarioAsignadoId).trim() === "" ||
+                Number(usuarioAsignadoId) === 0;
+
+            return sinCobrador && sinUsuarioAsignado;
+        });
+
+    } else if (cobradorSeleccionado !== "") {
+
+        clientesFiltrados = clientesFiltrados.filter(cliente => {
+
+            const cobradorId =
+                cliente.cobradorId ?? cliente.cobrador_id;
+
+            return String(cobradorId ?? "") ===
+                String(cobradorSeleccionado);
+        });
+    }
+
+} else if (
+    String(usuario.rol || "").trim().toUpperCase() === "COBRADOR"
 ) {
 
-    /*
-        El cobrador debe ver los clientes cuya
-        asignación central en Supabase corresponde
-        a su usuario.
-    */
+    clientesFiltrados = DB.clientes.filter(cliente => {
 
-    const usuarioId =
-        usuario.id;
+        const asignado =
+            cliente.usuarioAsignadoId ??
+            cliente.usuario_asignado_id ??
+            cliente.cobradorId ??
+            cliente.cobrador_id;
 
+        const coincideUsuario =
+            String(asignado ?? "") === String(usuario.id);
 
-    const authUserId =
-        usuario.auth_user_id;
+        const coincideAuth =
+            usuario.auth_user_id &&
+            String(asignado ?? "") ===
+            String(usuario.auth_user_id);
 
-
-    clientesFiltrados =
-        DB.clientes.filter(
-            cliente => {
-
-                const asignado =
-                    String(
-                        cliente.usuarioAsignadoId || ""
-                    );
-
-
-                const coincideUsuario =
-                    asignado ===
-                    String(usuarioId);
-
-
-                /*
-                    También permitimos coincidencia
-                    con auth_user_id cuando la asignación
-                    central esté trabajando con ese
-                    identificador.
-                */
-
-                const coincideAuth =
-                    authUserId &&
-                    String(
-                        asignado
-                    ) ===
-                    String(
-                        authUserId
-                    );
-
-
-                return (
-                    coincideUsuario ||
-                    coincideAuth
-                )
-                &&
-                cliente.estado === "ACTIVO";
-
-            }
+        return (
+            (coincideUsuario || coincideAuth) &&
+            String(cliente.estado || "").toUpperCase() === "ACTIVO"
         );
+    });
 
 }
 
 
-    /*
-        LIMPIAR TABLA
-    */
+const textoBusqueda = String(
+    document.getElementById("buscarCliente")?.value || ""
+).trim().toLowerCase();
+
+if (textoBusqueda) {
+    clientesFiltrados = clientesFiltrados.filter(cliente => {
+        const nombre = String(cliente.nombre || "").toLowerCase();
+        const cedula = String(cliente.cedula || "").toLowerCase();
+        const telefono = String(cliente.telefono || "").toLowerCase();
+
+        return (
+            nombre.includes(textoBusqueda) ||
+            cedula.includes(textoBusqueda) ||
+            telefono.includes(textoBusqueda)
+        );
+    });
+}
+
+
 
     tabla.innerHTML = "";
 
-
-    /*
-        MOSTRAR CLIENTES
-    */
-
-    clientesFiltrados.forEach(
-        cliente => {
-
-            tabla.innerHTML += `
-
+    if (clientesFiltrados.length === 0) {
+        tabla.innerHTML = `
             <tr>
-
-                <td>
-                    ${cliente.codigo || ""}
+                <td colspan="10" class="text-center text-muted">
+                    No hay clientes para el filtro seleccionado.
                 </td>
-
-                <td>
-                    ${cliente.nombre}
-                </td>
-
-                <td>
-                    ${cliente.cedula}
-                </td>
-
-                <td>
-                    ${cliente.telefono}
-                </td>
-
-                <td>
-                    ${dinero(
-                        obtenerCapitalPrestado(
-                            cliente.id
-                        )
-                    )}
-                </td>
-
-                <td>
-                    ${dinero(
-                        obtenerCapitalRecuperado(
-                            cliente.id
-                        )
-                    )}
-                </td>
-
-                <td>
-                    ${dinero(
-                        obtenerSaldoCliente(
-                            cliente.id
-                        )
-                    )}
-                </td>
-
-                <td>
-
-                    <span class="badge bg-primary">
-
-                        ${contarPrestamosActivos(
-                            cliente.id
-                        )}
-
-                    </span>
-
-                </td>
-
-
-                <td>
-
-                    <span class="badge 
-                        ${
-                            cliente.estado === "ACTIVO"
-
-                                ? "bg-success"
-
-                                : "bg-secondary"
-                        }
-                    ">
-
-                        ${cliente.estado}
-
-                    </span>
-
-                </td>
-
-
-                <td>
-
-                    <button
-                        class="btn btn-warning btn-sm"
-                        onclick="editarCliente(${cliente.id})">
-
-                        Editar
-
-                    </button>
-
-
-                    <button
-                        class="btn btn-info btn-sm"
-                        onclick="verResumenCliente(${cliente.id})">
-
-                        Resumen
-
-                    </button>
-
-
-                    ${
-                        cliente.estado === "ACTIVO"
-
-                            ? `
-
-                            <button
-                                class="btn btn-secondary btn-sm"
-                                onclick="inactivarCliente(${cliente.id})">
-
-                                ⛔ Inactivar
-
-                            </button>
-
-                            `
-
-                            : `
-
-                            <button
-                                class="btn btn-success btn-sm"
-                                onclick="reactivarCliente(${cliente.id})">
-
-                                ✅ Reactivar
-
-                            </button>
-
-                            `
-                    }
-
-                    ${
-                        usuario.rol === "ADMINISTRADOR"
-                            ? `
-
-                            <button
-                                class="btn btn-primary btn-sm"
-                                onclick="asignarClienteCobrador(${cliente.id})">
-
-                                👤 Asignar
-
-                            </button>
-
-                            `
-                            : ""
-                    }
-
-                </td>
-
             </tr>
+        `;
+        return;
+    }
 
-            `;
+    clientesFiltrados.forEach(cliente => {
 
-        }
-    );
+        const estado = String(cliente.estado || "").toUpperCase();
 
+        tabla.innerHTML += `
+            <tr>
+                <td>${cliente.codigo || ""}</td>
+                <td>${cliente.nombre || ""}</td>
+                <td>${cliente.cedula || ""}</td>
+                <td>${cliente.telefono || ""}</td>
+                <td>${dinero(obtenerCapitalPrestado(cliente.id))}</td>
+                <td>${dinero(obtenerCapitalRecuperado(cliente.id))}</td>
+                <td>${dinero(obtenerSaldoCliente(cliente.id))}</td>
+                <td>
+                    <span class="badge bg-primary">
+                        ${contarPrestamosActivos(cliente.id)}
+                    </span>
+                </td>
+                <td>
+                    <span class="badge ${
+                        estado === "ACTIVO" ? "bg-success" : "bg-secondary"
+                    }">
+                        ${estado}
+                    </span>
+                </td>
+                <td>
+                    <button class="btn btn-warning btn-sm"
+                        onclick="editarCliente(${Number(cliente.id)})">
+                        Editar
+                    </button>
+
+                    <button class="btn btn-info btn-sm"
+                        onclick="verResumenCliente(${Number(cliente.id)})">
+                        Resumen
+                    </button>
+
+                    ${
+                        ["ADMIN", "ADMINISTRADOR", "COBRADOR"].includes(
+                            String(usuario.rol || "").toUpperCase()
+                        ) && estado === "ACTIVO"
+                        ? `
+                            <button class="btn btn-success btn-sm"
+                                onclick="nuevoCreditoCliente(${Number(cliente.id)})">
+                                ➕ Nuevo crédito
+                            </button>
+                        `
+                        : ""
+                    }
+
+                    ${
+                        estado === "ACTIVO"
+                        ? `
+                            <button class="btn btn-secondary btn-sm"
+                                onclick="inactivarCliente(${Number(cliente.id)})">
+                                ⛔ Inactivar
+                            </button>
+                        `
+                        : `
+                            <button class="btn btn-success btn-sm"
+                                onclick="reactivarCliente(${Number(cliente.id)})">
+                                ✅ Reactivar
+                            </button>
+                        `
+                    }
+
+                    ${
+                        esAdmin
+                        ? `
+                            <button class="btn btn-primary btn-sm"
+                                onclick="asignarClienteCobrador(${Number(cliente.id)})">
+                                👤 Asignar
+                            </button>
+                        `
+                        : ""
+                    }
+                </td>
+            </tr>
+        `;
+    });
 }
+
 
 /*=========================================================
     ACTUALIZAR CLIENTE EN SUPABASE
@@ -2268,4 +2191,70 @@ ${datos.activos}`
     );
 
 }
+
+
+/*=========================================================
+    INICIALIZAR BUSCADOR Y FILTRO DE COBRADOR
+=========================================================*/
+
+document.addEventListener("DOMContentLoaded", async () => {
+
+    const buscador = document.getElementById("buscarCliente");
+    const filtro = document.getElementById("filtroCobradorClientes");
+    const select = document.getElementById("selectCobradorClientes");
+
+    // Conectar el buscador por nombre, cédula o teléfono.
+    if (buscador && !buscador.dataset.eventoConectado) {
+        buscador.addEventListener("input", listarClientes);
+        buscador.dataset.eventoConectado = "true";
+    }
+
+    const usuario = obtenerUsuarioActual();
+
+    if (!usuario) {
+        console.warn("No se pudo obtener el usuario al inicializar los filtros.");
+        return;
+    }
+
+    const rol = String(usuario.rol || "").trim().toUpperCase();
+
+    // El filtro por cobrador solo se muestra al administrador.
+    const esAdmin = ["ADMIN", "ADMINISTRADOR"].includes(rol);
+
+    if (filtro) {
+        filtro.classList.toggle("d-none", !esAdmin);
+    }
+
+    if (esAdmin && select) {
+        try {
+            const cobradores = await cargarCobradoresEmpresa();
+
+            select.innerHTML = `
+                <option value="">Todos los cobradores</option>
+                <option value="SIN_ASIGNAR">Clientes sin cobrador</option>
+            `;
+
+            cobradores.forEach(cobrador => {
+                const opcion = document.createElement("option");
+                opcion.value = String(cobrador.id);
+                opcion.textContent = cobrador.nombre;
+                select.appendChild(opcion);
+            });
+
+            if (!select.dataset.eventoConectado) {
+                select.addEventListener("change", listarClientes);
+                select.dataset.eventoConectado = "true";
+            }
+
+        } catch (error) {
+            console.error(
+                "Error inicializando filtro de clientes:",
+                error
+            );
+        }
+    }
+
+    listarClientes();
+});
+
 

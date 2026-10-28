@@ -4,8 +4,7 @@ const SUPABASE_URL =
 const SUPABASE_PUBLIC_KEY =
     "sb_publishable_QeMGBYXdta_lt-cFffqmDQ_bNQeJV3u";
 
-
-const supabaseClient =
+window.supabaseClient =
     window.supabase.createClient(
         SUPABASE_URL,
         SUPABASE_PUBLIC_KEY,
@@ -18,6 +17,7 @@ const supabaseClient =
         }
     );
 
+const supabaseClient = window.supabaseClient;
 
 console.log(
     "BKC Empresa conectado a Supabase"

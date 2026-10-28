@@ -698,12 +698,21 @@ cobrosFiltrados.forEach(cuota => {
 });
 
 const cobrosOrdenados =
-    [...cobrosFiltrados].sort((a,b)=>{
+    [...cobrosFiltrados]
+        .filter(cuota => {
+            const saldo =
+                Number(cuota.valor || 0) -
+                Number(cuota.pagado || 0);
 
-        return new Date(a.fecha) -
-               new Date(b.fecha);
-
-    });
+            return (
+                String(cuota.fecha || "").slice(0, 10) <= fechaActual &&
+                saldo > 0
+            );
+        })
+        .sort((a, b) => {
+            return String(a.fecha || "")
+                .localeCompare(String(b.fecha || ""));
+        });
 
     cobrosOrdenados.forEach(cuota=>{
 
@@ -1170,141 +1179,123 @@ function contarPrestamosActivos(){
 
 let graficoCapital = null;
 
-function actualizarGraficoCapital(resumen){
 
-    const canvas =
-        document.getElementById("graficoCapital");
+function actualizarGraficoCapital(resumen) {
+    const canvas = document.getElementById("graficoCapital");
 
-    if(!canvas) return;
-
-    const recuperado =
-        Number(resumen.capitalRecuperado || 0);
-
-    const pendiente =
-        Number(resumen.capitalPendiente || 0);
-
-    const intereses =
-        Number(resumen.interesesRecuperados || 0);
-
-
-    // Si ya existe el gráfico, lo destruimos
-    // antes de volver a crearlo
-
-    if(graficoCapital){
-
-        graficoCapital.destroy();
-
+    if (!canvas || typeof Chart === "undefined") {
+        return;
     }
 
+    if (graficoCapital) {
+        graficoCapital.destroy();
+        graficoCapital = null;
+    }
 
-    graficoCapital = new Chart(
+    const ahora = new Date();
 
-        canvas,
+    const prefijoMes =
+        `${ahora.getFullYear()}-${String(
+            ahora.getMonth() + 1
+        ).padStart(2, "0")}`;
 
-        {
+    const pagos = Array.isArray(DB?.pagos)
+        ? DB.pagos
+        : [];
 
-            type:"doughnut",
+    const totales = new Map();
 
-            data:{
+    pagos.forEach(pago => {
+        const fechaPago = String(
+            pago.fecha || ""
+        ).slice(0, 10);
 
-                labels:[
-
-                    "Capital Recuperado",
-
-                    "Saldo Pendiente",
-
-                    "Intereses Recuperados"
-
-                ],
-
-                datasets:[
-
-                    {
-
-                        data:[
-
-                            recuperado,
-
-                            pendiente,
-
-                            intereses
-
-                        ],
-
-                        backgroundColor:[
-
-                            "#198754",
-
-                            "#f59e0b",
-
-                            "#0d6efd"
-
-                        ],
-
-                        borderWidth:0,
-
-                        hoverOffset:6
-
-                    }
-
-                ]
-
-            },
-
-            options:{
-
-                responsive:true,
-
-                maintainAspectRatio:false,
-
-                cutout:"68%",
-
-                plugins:{
-
-                    legend:{
-
-                        position:"bottom",
-
-                        labels:{
-
-                            usePointStyle:true,
-
-                            padding:20,
-
-                            font:{
-
-                                size:12
-
-                            }
-
-                        }
-
-                    },
-
-                    tooltip:{
-
-                        callbacks:{
-
-                            label:function(context){
-
-                                return context.label +
-                                    ": " +
-                                    dinero(context.raw);
-
-                            }
-
-                        }
-
-                    }
-
-                }
-
-            }
-
+        if (!fechaPago.startsWith(prefijoMes)) {
+            return;
         }
 
-    );
+        const nombre =
+            String(pago.usuarioNombre || "").trim() ||
+            "Cobrador sin identificar";
 
+        const valor = Number(pago.valor || 0);
+
+        if (!Number.isFinite(valor) || valor <= 0) {
+            return;
+        }
+
+        totales.set(
+            nombre,
+            (totales.get(nombre) || 0) + valor
+        );
+    });
+
+    const filas = [...totales.entries()]
+        .sort((a, b) => b[1] - a[1]);
+
+    const labels = filas.length
+        ? filas.map(fila => fila[0])
+        : ["Sin recaudos este mes"];
+
+    const valores = filas.length
+        ? filas.map(fila => fila[1])
+        : [0];
+
+    graficoCapital = new Chart(canvas, {
+        type: "bar",
+
+        data: {
+            labels,
+
+            datasets: [{
+                label: "Recaudo del mes",
+                data: valores,
+                backgroundColor: "#198754",
+                borderRadius: 5,
+                maxBarThickness: 38
+            }]
+        },
+
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: "y",
+
+            scales: {
+                x: {
+                    beginAtZero: true,
+
+                    ticks: {
+                        callback: value =>
+                            new Intl.NumberFormat("es-CO", {
+                                style: "currency",
+                                currency: "COP",
+                                maximumFractionDigits: 0
+                            }).format(value)
+                    }
+                },
+
+                y: {
+                    ticks: {
+                        autoSkip: false
+                    }
+                }
+            },
+
+            plugins: {
+                legend: {
+                    display: false
+                },
+
+                tooltip: {
+                    callbacks: {
+                        label: context =>
+                            "Recaudo: " + dinero(context.raw)
+                    }
+                }
+            }
+        }
+    });
 }
 
 /*=========================================================

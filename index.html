@@ -244,6 +244,13 @@
 
         </li>
 
+        
+        <li data-page="costos">
+            <i class="fa fa-calculator"></i>
+            <span>Costos de Producción y Recaudo</span>
+        </li>
+
+
         <li
             data-page="usuarios"
             id="menuUsuarios">
@@ -475,76 +482,110 @@
 
 
     <!-- INFORMACIÓN FINANCIERA -->
-    <div class="row g-4 mt-1">
 
-        <div class="col-lg-8">
-
-            <div class="card dashboard-panel">
-
-                <div class="dashboard-panel-header">
-
-                    <div>
-                        <h5>Resumen Financiero</h5>
-                        <small>
-                            Distribución general de la cartera
-                        </small>
-                    </div>
-
+<!-- RECAUDO MENSUAL POR COBRADOR -->
+<div class="row g-4 mt-1">
+    <div class="col-12">
+        <div class="card dashboard-panel">
+            <div class="dashboard-panel-header">
+                <div>
+                    <h5>Recaudo mensual por cobrador</h5>
+                    <small>Dinero efectivamente recibido durante el mes actual</small>
                 </div>
-
-                <div class="dashboard-chart">
-
-                    <canvas
-                        id="graficoCapital"
-                        height="120">
-                    </canvas>
-
-                </div>
-
             </div>
 
+            <div class="dashboard-chart dashboard-chart-recaudo">
+                <canvas id="graficoCapital"></canvas>
+            </div>
         </div>
+    </div>
+</div>
 
-
-        <div class="col-lg-4">
-
-            <div class="card dashboard-panel">
-
-                <div class="dashboard-panel-header">
-
-                    <div>
-                        <h5>Cobros del Día</h5>
-                        <small>
-                            Pagos programados para hoy
-                        </small>
-                    </div>
-
+<!-- COBROS DE HOY Y VENCIDOS: ANCHO COMPLETO -->
+<div class="row g-4 mt-1">
+    <div class="col-12">
+        <div class="card dashboard-panel">
+            <div class="dashboard-panel-header">
+                <div>
+                    <h5>Cobros de hoy y vencidos</h5>
+                    <small>Hasta 10 cobros prioritarios, con desplazamiento para consultar la lista.</small>
                 </div>
 
+                <div class="text-end">
+                    <small class="d-block">Saldo pendiente de cobro</small>
+                    <strong id="totalCobrosHoy">$0</strong>
+                </div>
+            </div>
+
+            <div class="cobros-dashboard-scroll">
                 <div class="table-responsive">
-
-                    <table class="table table-hover">
-
+                    <table class="table table-hover align-middle mb-0">
                         <thead>
                             <tr>
                                 <th>Cliente</th>
-                                <th>Valor</th>
+                                <th>Teléfono</th>
+                                <th>Préstamo</th>
+                                <th>Cuota</th>
+                                <th>Valor pendiente</th>
+                                <th>Estado</th>
+                                <th>Días vencidos</th>
+                                <th>Acciones</th>
                             </tr>
                         </thead>
-
-                        <tbody id="tablaCobrosHoy">
-                        </tbody>
-
+                        <tbody id="tablaCobrosHoy"></tbody>
                     </table>
-
                 </div>
-
             </div>
-
         </div>
-
     </div>
+</div>
 
+<style>
+    #dashboard .dashboard-chart-recaudo {
+        position: relative;
+        width: 100%;
+        height: 340px;
+        padding: 16px 22px 22px;
+    }
+
+    #dashboard .cobros-dashboard-scroll {
+        max-height: 430px;
+        overflow-y: auto;
+        overflow-x: auto;
+        scrollbar-gutter: stable;
+    }
+
+    #dashboard .cobros-dashboard-scroll thead th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: #fff;
+        white-space: nowrap;
+        box-shadow: 0 1px 0 rgba(0, 0, 0, .08);
+    }
+
+    #dashboard #tablaCobrosHoy td {
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
+    #dashboard #tablaCobrosHoy td:first-child {
+        white-space: normal;
+        min-width: 150px;
+    }
+
+    @media (max-width: 768px) {
+        #dashboard .dashboard-chart-recaudo {
+            height: 280px;
+            padding: 12px;
+        }
+
+        #dashboard .cobros-dashboard-scroll {
+            max-height: 360px;
+        }
+    }
+</style>
+```
 </section>
       <!-- =============================
         CLIENTES
@@ -597,6 +638,22 @@
             </div>
 
         </div>
+
+
+        <!-- FILTRO POR COBRADOR: SOLO ADMINISTRADOR -->
+
+        <div id="filtroCobradorClientes" class="row mb-3 d-none">
+            <div class="col-md-4">
+                <label for="selectCobradorClientes" class="form-label">
+                    Filtrar clientes por cobrador
+                </label>
+
+                <select id="selectCobradorClientes" class="form-select">
+                    <option value="">Todos los cobradores</option>
+                </select>
+            </div>
+        </div>
+
 
 
         <!-- TABLA -->
@@ -816,15 +873,24 @@
 
         </div>
 
-        <button
-            id="btnNuevoPrestamo"
-            class="btn btn-success">
+        
+        <div class="d-flex flex-wrap gap-2">
+            <button
+                id="btnSolicitudesCredito"
+                type="button"
+                class="btn btn-primary">
+                <i class="fa fa-file-circle-check"></i>
+                Solicitudes de crédito
+                <span id="contadorSolicitudesCredito"
+                    class="badge text-bg-light ms-1">0</span>
+            </button>
 
-            <i class="fa fa-plus"></i>
+            <button id="btnNuevoPrestamo" class="btn btn-success">
+                <i class="fa fa-plus"></i>
+                Nuevo Préstamo
+            </button>
+        </div>
 
-            Nuevo Préstamo
-
-        </button>
 
     </div>
 
@@ -1009,6 +1075,77 @@
                                 </div>
 
                             </div>
+
+                                                        
+                            <!-- RESUMEN DE RENOVACIÓN DE CRÉDITO -->
+                            <div id="panelRenovacion" class="card border-primary mt-3 mb-3 d-none">
+                                <div class="card-header bg-primary text-white">
+                                    <strong>
+                                        <i class="fa fa-arrows-rotate"></i>
+                                        Renovación de crédito
+                                    </strong>
+                                </div>
+
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">
+                                                Saldo pendiente anterior
+                                            </label>
+                                            <input
+                                                id="saldoAnteriorRenovacion"
+                                                type="text"
+                                                class="form-control"
+                                                value="$0"
+                                                readonly>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label">
+                                                Monto aplicado a la deuda anterior
+                                            </label>
+                                            <input
+                                                id="montoAplicadoRenovacion"
+                                                type="number"
+                                                class="form-control"
+                                                min="0"
+                                                step="1"
+                                                value="0">
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label">
+                                                Valor del nuevo crédito
+                                            </label>
+                                            <input
+                                                id="valorNuevoCreditoRenovacion"
+                                                type="text"
+                                                class="form-control"
+                                                value="$0"
+                                                readonly>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label">
+                                                Dinero neto por entregar
+                                            </label>
+                                            <input
+                                                id="dineroNetoRenovacion"
+                                                type="text"
+                                                class="form-control fw-bold text-success"
+                                                value="$0"
+                                                readonly>
+                                        </div>
+                                    </div>
+
+                                    <small class="text-muted d-block mt-3">
+                                        La aplicación al crédito anterior no constituye un pago
+                                        en efectivo ni debe generar un registro en el módulo de pagos.
+                                    </small>
+                                </div>
+                            </div>
+                            <!-- FIN RESUMEN DE RENOVACIÓN -->
+
 
                             <div class="row mt-3">
 
@@ -1357,6 +1494,211 @@
         </div>
 
 
+    ---REPORTE DE RECAUDO POR COBRADOR---
+
+
+
+<div class="card p-4 mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+
+            <h4>Recaudo por Cobrador</h4>
+
+            <p class="text-muted mb-0">
+                Consulta los pagos registrados por cada usuario
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- FILTROS -->
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-4">
+
+            <label for="filtroCobrador" class="form-label">
+                Cobrador
+            </label>
+
+            <select
+                id="filtroCobrador"
+                class="form-select">
+
+                <option value="">
+                    Todos los usuarios
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <div class="col-md-3">
+
+            <label for="filtroFechaDesde" class="form-label">
+                Desde
+            </label>
+
+            <input
+                id="filtroFechaDesde"
+                type="date"
+                class="form-control">
+
+        </div>
+
+
+        <div class="col-md-3">
+
+            <label for="filtroFechaHasta" class="form-label">
+                Hasta
+            </label>
+
+            <input
+                id="filtroFechaHasta"
+                type="date"
+                class="form-control">
+
+        </div>
+
+
+      <div class="col-md-2 d-flex align-items-end gap-2">
+
+    <button
+        id="btnConsultarRecaudo"
+        class="btn btn-primary">
+
+        <i class="fa fa-search"></i>
+
+        Consultar
+
+    </button>
+
+    <button
+        id="btnExportarRecaudo"
+        class="btn btn-success"
+        title="Exportar reporte a Excel">
+
+        <i class="fa fa-file-excel"></i>
+
+        Excel
+
+    </button>
+
+    </div>
+
+</div>
+
+
+    <!-- INDICADORES -->
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-3">
+
+            <div class="card p-3 text-center">
+
+                <small>Total Recaudado</small>
+
+                <h4 id="reporteTotalRecaudado">
+                    $0
+                </h4>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-3">
+
+            <div class="card p-3 text-center">
+
+                <small>Capital Recuperado</small>
+
+                <h4 id="reporteCapitalRecuperado">
+                    $0
+                </h4>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-3">
+
+            <div class="card p-3 text-center">
+
+                <small>Intereses Recuperados</small>
+
+                <h4 id="reporteInteresesRecuperados">
+                    $0
+                </h4>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-3">
+
+            <div class="card p-3 text-center">
+
+                <small>Cantidad de Pagos</small>
+
+                <h4 id="reporteCantidadPagos">
+                    0
+                </h4>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- DETALLE -->
+
+    <div class="table-responsive">
+
+        <table class="table table-hover">
+
+            <thead>
+
+                <tr>
+
+                    <th>Fecha</th>
+
+                    <th>Recibo</th>
+
+                    <th>Cobrador</th>
+
+                    <th>Cliente</th>
+
+                    <th>Préstamo</th>
+
+                    <th>Capital</th>
+
+                    <th>Interés</th>
+
+                    <th>Total</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody id="tablaReporteCobradores">
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
        
 </section>
 
@@ -1545,209 +1887,324 @@
 
 </section>
 
-<!-- ===========================================
-     REPORTE DE RECAUDO POR COBRADOR
-=========================================== -->
 
-<div class="card p-4 mt-4">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
 
+<!-- MÓDULO: COSTOS DE PRODUCCIÓN Y RECAUDO -->
+<section id="costos" class="page d-none">
+
+    <div class="module-header">
         <div>
+            <h3>Costos de Producción y Recaudo</h3>
+            <p>
+                Consulta ingresos, registra gastos y calcula
+                la producción neta.
+            </p>
+        </div>
+    </div>
 
-            <h4>Recaudo por Cobrador</h4>
+    <div id="mensajeCostos"
+         class="alert d-none"
+         role="alert"></div>
 
-            <p class="text-muted mb-0">
-                Consulta los pagos registrados por cada usuario
+    <!-- REGISTRO DE GASTOS -->
+    <div class="card shadow-sm mb-4"
+         id="contenedorFormularioGasto">
+
+        <div class="card-body">
+            <h5 id="tituloFormularioGasto">Registrar gasto</h5>
+
+            <p class="text-muted">
+                Los gastos se descuentan de la producción
+                del período seleccionado.
             </p>
 
-        </div>
+            <form id="formularioGastoCostos">
 
+                <input type="hidden" id="idGastoCostos">
+
+                <div class="row g-3">
+
+                    <div class="col-md-3">
+                        <label for="fechaGastoCostos"
+                               class="form-label">
+                            Fecha del gasto
+                        </label>
+
+                        <input type="date"
+                               id="fechaGastoCostos"
+                               class="form-control"
+                               required>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="categoriaGastoCostos"
+                               class="form-label">
+                            Categoría
+                        </label>
+
+                        <select id="categoriaGastoCostos"
+                                class="form-select"
+                                required>
+                            <option value="">Seleccione...</option>
+                            <option value="GASOLINA">Gasolina</option>
+                            <option value="ALMUERZO">Almuerzo</option>
+                            <option value="MERIENDA">Merienda</option>
+                            <option value="REPARACION_VARADA_MOTO">
+                                Reparación / varada de moto
+                            </option>
+                            <option value="REPUESTOS_MANTENIMIENTO">
+                                Repuestos / mantenimiento
+                            </option>
+                            <option value="GASTOS_VARIOS">
+                                Gastos varios
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="conceptoGastoCostos"
+                               class="form-label">
+                            Concepto / detalle
+                        </label>
+
+                        <input type="text"
+                               id="conceptoGastoCostos"
+                               class="form-control"
+                               maxlength="250"
+                               placeholder="Detalle del gasto">
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="valorGastoCostos"
+                               class="form-label">
+                            Valor ($)
+                        </label>
+
+                        <input type="number"
+                               id="valorGastoCostos"
+                               class="form-control"
+                               min="1"
+                               step="1"
+                               required
+                               placeholder="Ej. 15000">
+                    </div>
+
+                    <div class="col-md-6"
+                         id="contenedorCobradorGasto">
+
+                        <label for="cobradorGastoCostos"
+                               class="form-label">
+                            Cobrador
+                        </label>
+
+                        <select id="cobradorGastoCostos"
+                                class="form-select"
+                                required>
+                            <option value="">
+                                Cargando cobradores...
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="col-12 d-flex gap-2">
+
+                        <button type="submit"
+                                id="btnGuardarGastoCostos"
+                                class="btn btn-primary">
+                            <i class="fa fa-save"></i>
+                            Guardar gasto
+                        </button>
+
+                        <button type="button"
+                                id="btnCancelarEdicionGastoCostos"
+                                class="btn btn-outline-secondary d-none">
+                            Cancelar edición
+                        </button>
+
+                    </div>
+
+                </div>
+            </form>
+        </div>
     </div>
 
+    <!-- CONSULTA DE GASTOS -->
+    <div class="card shadow-sm mb-4">
 
-    <!-- FILTROS -->
+        <div class="card-body">
+            <h5>Consulta de gastos</h5>
 
-    <div class="row g-3 mb-4">
+            <div class="row g-3 align-items-end">
 
-        <div class="col-md-4">
+                <div class="col-md-3">
+                    <label for="fechaInicioListaCostos"
+                           class="form-label">
+                        Fecha inicial
+                    </label>
 
-            <label for="filtroCobrador" class="form-label">
-                Cobrador
-            </label>
+                    <input type="date"
+                           id="fechaInicioListaCostos"
+                           class="form-control">
+                </div>
 
-            <select
-                id="filtroCobrador"
-                class="form-select">
+                <div class="col-md-3">
+                    <label for="fechaFinListaCostos"
+                           class="form-label">
+                        Fecha final
+                    </label>
 
-                <option value="">
-                    Todos los usuarios
-                </option>
+                    <input type="date"
+                           id="fechaFinListaCostos"
+                           class="form-control">
+                </div>
 
-            </select>
+                <div class="col-md-3"
+                     id="contenedorFiltroCobradorCostos">
 
-        </div>
+                    <label for="filtroCobradorCostos"
+                           class="form-label">
+                        Cobrador
+                    </label>
 
+                    <select id="filtroCobradorCostos"
+                            class="form-select">
+                        <option value="">
+                            Todos los cobradores
+                        </option>
+                    </select>
+                </div>
 
-        <div class="col-md-3">
-
-            <label for="filtroFechaDesde" class="form-label">
-                Desde
-            </label>
-
-            <input
-                id="filtroFechaDesde"
-                type="date"
-                class="form-control">
-
-        </div>
-
-
-        <div class="col-md-3">
-
-            <label for="filtroFechaHasta" class="form-label">
-                Hasta
-            </label>
-
-            <input
-                id="filtroFechaHasta"
-                type="date"
-                class="form-control">
-
-        </div>
-
-
-      <div class="col-md-2 d-flex align-items-end gap-2">
-
-    <button
-        id="btnConsultarRecaudo"
-        class="btn btn-primary">
-
-        <i class="fa fa-search"></i>
-
-        Consultar
-
-    </button>
-
-    <button
-        id="btnExportarRecaudo"
-        class="btn btn-success"
-        title="Exportar reporte a Excel">
-
-        <i class="fa fa-file-excel"></i>
-
-        Excel
-
-    </button>
-
-</div>
-
-
-    <!-- INDICADORES -->
-
-    <div class="row g-3 mb-4">
-
-        <div class="col-md-3">
-
-            <div class="card p-3 text-center">
-
-                <small>Total Recaudado</small>
-
-                <h4 id="reporteTotalRecaudado">
-                    $0
-                </h4>
+                <div class="col-md-3">
+                    <button type="button"
+                            id="btnConsultarGastosCostos"
+                            class="btn btn-outline-primary w-100">
+                        <i class="fa fa-search"></i>
+                        Consultar gastos
+                    </button>
+                </div>
 
             </div>
 
-        </div>
+            <div class="table-responsive mt-4">
 
+                <table class="table table-striped table-hover align-middle">
 
-        <div class="col-md-3">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Cobrador</th>
+                            <th>Categoría</th>
+                            <th>Concepto</th>
+                            <th class="text-end">Valor</th>
+                            <th id="encabezadoAccionesGastos">
+                                Acciones
+                            </th>
+                        </tr>
+                    </thead>
 
-            <div class="card p-3 text-center">
+                    <tbody id="tablaGastosCostos">
+                        <tr>
+                            <td colspan="6"
+                                class="text-center text-muted">
+                                Cargando gastos...
+                            </td>
+                        </tr>
+                    </tbody>
 
-                <small>Capital Recuperado</small>
+                    <tfoot>
+                        <tr>
+                            <th colspan="4" class="text-end">
+                                Total de gastos consultados
+                            </th>
 
-                <h4 id="reporteCapitalRecuperado">
-                    $0
-                </h4>
+                            <th id="totalGastosCostos"
+                                class="text-end">
+                                $0
+                            </th>
 
+                            <th></th>
+                        </tr>
+                    </tfoot>
+
+                </table>
             </div>
-
         </div>
-
-
-        <div class="col-md-3">
-
-            <div class="card p-3 text-center">
-
-                <small>Intereses Recuperados</small>
-
-                <h4 id="reporteInteresesRecuperados">
-                    $0
-                </h4>
-
-            </div>
-
-        </div>
-
-
-        <div class="col-md-3">
-
-            <div class="card p-3 text-center">
-
-                <small>Cantidad de Pagos</small>
-
-                <h4 id="reporteCantidadPagos">
-                    0
-                </h4>
-
-            </div>
-
-        </div>
-
     </div>
 
+    <!-- CRUCE DE INGRESOS Y GASTOS -->
+    <div class="card shadow-sm">
 
-    <!-- DETALLE -->
+        <div class="card-body">
+            <h5>Ingresos netos / Cruce</h5>
 
-    <div class="table-responsive">
+            <p>
+                Selecciona el período para calcular el recaudo bruto,
+                los gastos acumulados y la producción neta.
+            </p>
 
-        <table class="table table-hover">
+            <div class="row g-3 mt-2">
 
-            <thead>
+                <div class="col-md-4">
+                    <label for="tipoPeriodoCostos"
+                           class="form-label">
+                        Período del cruce
+                    </label>
 
-                <tr>
+                    <select id="tipoPeriodoCostos"
+                            class="form-select">
+                        <option value="diario">Diario</option>
+                        <option value="semanal">Semanal</option>
+                        <option value="mensual">Mensual</option>
+                    </select>
+                </div>
 
-                    <th>Fecha</th>
+                <div class="col-md-4">
+                    <label for="fechaInicioCostos"
+                           class="form-label">
+                        Fecha inicial
+                    </label>
 
-                    <th>Recibo</th>
+                    <input type="date"
+                           id="fechaInicioCostos"
+                           class="form-control">
+                </div>
 
-                    <th>Cobrador</th>
+                <div class="col-md-4">
+                    <label for="fechaFinCostos"
+                           class="form-label">
+                        Fecha final
+                    </label>
 
-                    <th>Cliente</th>
+                    <input type="date"
+                           id="fechaFinCostos"
+                           class="form-control">
+                </div>
 
-                    <th>Préstamo</th>
+            </div>
 
-                    <th>Capital</th>
+            <div class="mt-3">
+                <button type="button"
+                        id="btnCruceIngresosNetos"
+                        class="btn btn-primary">
+                    <i class="fa fa-calculator"></i>
+                    Ingresos netos / Cruce
+                </button>
+            </div>
 
-                    <th>Interés</th>
+            <div id="resultadoCruceCostos" class="mt-4">
+                <p class="text-muted mb-0">
+                    El cruce con el recaudo se habilitará en el siguiente
+                    paso, una vez verificada la estructura de los pagos.
+                </p>
+            </div>
 
-                    <th>Total</th>
-
-                </tr>
-
-            </thead>
-
-            <tbody id="tablaReporteCobradores">
-
-            </tbody>
-
-        </table>
-
+        </div>
     </div>
 
-</div>
+</section>
+<!-- FIN MÓDULO: COSTOS DE PRODUCCIÓN Y RECAUDO -->
+
 
 <!-- ===========================================
         USUARIOS
@@ -2970,9 +3427,7 @@
 
                                 </div>
 
-                            </div>
-
-
+                            
 
                             <!-- ==============================
                      SIMULACIÓN
@@ -3022,18 +3477,21 @@
 
                         </div>
 
+                        
                         <div class="modal-footer">
-
-                            <button class="btn btn-secondary" data-bs-dismiss="modal">
-
+                            <button
+                                type="button"
+                                class="btn btn-secondary"
+                                data-bs-dismiss="modal">
                                 Cancelar
-
                             </button>
 
-                            <button id="btnGuardarReestructuracion" class="btn btn-success">
-
-                                💾 Guardar Reestructuración
-
+                            <button
+                                type="button"
+                                id="btnNuevaGuardarLiquidacion"
+                                class="btn btn-success"
+                                onclick="event.preventDefault(); event.stopPropagation(); guardarReestructuracion(); return false;">
+                                💾 Guardar Liquidación
                             </button>
 
                         </div>
@@ -3081,11 +3539,12 @@
     <script src="js/dashboard.js"></script>
     <script src="js/utilidades.js"></script>
     <script src="js/calculos.js"></script>
-    <script src="js/prestamos.js"></script>
+    <script src="js/prestamos.js?v=20261026-liquidacion-fix3"></script>
     <script src="js/pagos.js"></script>
     <!-- Recibos PDF -->
     <script src="js/recibos.js"></script>
     <script src="js/reportes.js"></script>
+    <script src="js/costos.js"></script>
     <script src="js/app.js"></script>
 <!-- =====================================================
      ACTIVACION CREDICONTROL EMPRESA
@@ -3289,34 +3748,28 @@
 </div>
 
 <script>
-
 if ("serviceWorker" in navigator) {
-
     window.addEventListener("load", async () => {
-
         try {
+            const registro = await navigator.serviceWorker.register(
+                "./sw.js",
+                { updateViaCache: "none" }
+            );
 
-            const registro =
-                await navigator.serviceWorker.register("./sw.js");
+            await registro.update();
 
             console.log(
                 "Service Worker registrado:",
                 registro.scope
             );
-
         } catch (error) {
-
             console.error(
-                "No fue posible registrar el Service Worker.",
+                "No fue posible actualizar el Service Worker:",
                 error
             );
-
         }
-
     });
-
 }
-
 </script>
 
 

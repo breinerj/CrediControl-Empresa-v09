@@ -143,6 +143,50 @@ function calcularPrestamo(){
     );
 
 }
+
+/*=========================================================
+    UTILIDADES PARA FECHAS QUINCENALES
+=========================================================*/
+
+function siguienteFechaQuincenal(fecha) {
+
+    const siguiente = new Date(
+        fecha.getFullYear(),
+        fecha.getMonth(),
+        fecha.getDate()
+    );
+
+    if (siguiente.getDate() <= 15) {
+
+        // Segunda quincena: día 30 o último día del mes.
+        const ultimoDia = new Date(
+            siguiente.getFullYear(),
+            siguiente.getMonth() + 1,
+            0
+        ).getDate();
+
+        siguiente.setDate(Math.min(30, ultimoDia));
+
+    } else {
+
+        // Primera quincena del mes siguiente.
+        siguiente.setDate(1);
+        siguiente.setMonth(siguiente.getMonth() + 1);
+        siguiente.setDate(15);
+
+    }
+
+    return siguiente;
+}
+
+function fechaLocalTexto(fecha) {
+
+    const anio = fecha.getFullYear();
+    const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+    const dia = String(fecha.getDate()).padStart(2, "0");
+
+    return `${anio}-${mes}-${dia}`;
+}
 /*=========================================================
         GENERAR VISTA PREVIA DEL CRONOGRAMA
 =========================================================*/
@@ -200,8 +244,7 @@ function generarVistaCronograma(
 
         saldo -= capitalCuota;
 
-        let fechaTexto =
-            fechaPago.toISOString().substring(0,10);
+        let fechaTexto = fechaLocalTexto(fechaPago);
 
         tabla.innerHTML += `
             <tr>
@@ -220,13 +263,15 @@ function generarVistaCronograma(
                 fechaPago.getDate() + 1
             );
 
-        }else if(periodicidad == "Quincenal"){
+        }
+        
+        else if(periodicidad == "Quincenal"){
 
-            fechaPago.setDate(
-                fechaPago.getDate() + 15
-            );
+            fechaPago = siguienteFechaQuincenal(fechaPago);
 
-        }else if(periodicidad == "Mensual"){
+        }
+
+        else if(periodicidad == "Mensual"){
 
             fechaPago.setMonth(
                 fechaPago.getMonth() + 1
@@ -237,9 +282,7 @@ function generarVistaCronograma(
 
 }
 
-/*=========================================================
-        CREAR CRONOGRAMA PARA GUARDAR
-=========================================================*/
+
 /*=========================================================
         CREAR CRONOGRAMA PARA GUARDAR
 =========================================================*/
@@ -426,54 +469,28 @@ function construirCronograma(){
 
         }
 
-        else if(periodicidad == "Quincenal"){
+        else if (periodicidad == "Quincenal") {
 
-            /*
-            -------------------------------------------------
-                QUINCENAL
-                Alterna entre los días 15 y 30
-            -------------------------------------------------
-            */
-
-            let diaActual = fechaPago.getDate();
-
-            if(diaActual < 15){
-
-                fechaPago.setDate(15);
-
-            }
-
-            else if(diaActual < 30){
-
-                fechaPago.setDate(30);
-
-            }
-
-            else{
-
-                fechaPago.setMonth(
-                    fechaPago.getMonth() + 1
-                );
-
-                fechaPago.setDate(15);
-
-            }
+            fechaPago = siguienteFechaQuincenal(fechaPago);
 
         }
 
-        else if(periodicidad == "Mensual"){
+
+        else if (periodicidad == "Mensual") {
 
             fechaPago.setMonth(
                 fechaPago.getMonth() + 1
             );
 
         }
-
-    }
+        
+    } // Cierra el ciclo for
 
     return cronograma;
 
-}
+} // Cierra construirCronograma    
+        
+
 /*=========================================================
         VISTA PREVIA DEL CRONOGRAMA
 =========================================================*/
@@ -880,3 +897,31 @@ function calcularPrestamoCompleto(){
     };
 
 }
+
+/* ==========================================
+   ACTIVAR VISTA PREVIA AUTOMÁTICA
+   ========================================== */
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const campos = [
+        "capital",
+        "interes",
+        "tipoInteres",
+        "meses",
+        "periodicidad",
+        "primerPago"
+    ];
+
+    campos.forEach(function (id) {
+
+        const campo = document.getElementById(id);
+
+        if (campo) {
+            campo.addEventListener("input", actualizarVistaPreviaCronograma);
+            campo.addEventListener("change", actualizarVistaPreviaCronograma);
+        }
+
+    });
+
+})
